@@ -1,0 +1,114 @@
+<project name="lab3" default="run" basedir=".">
+   
+ 
+	<!--
+	   $Id: build.xml 25 2010-05-23 16:31:06Z cytron $
+	-->
+
+	
+	<property 
+       name="toolpath" 
+       value="./Tools/"
+   />
+	
+	<target name="run" depends="setup,genScanner,rebuild">
+		<antcall target="runAll">
+			<param name="target" value="processcup"/>
+		</antcall>
+	</target>
+
+	<target name="runAndGenTables" depends="run">
+		<antcall target="runAll">
+			<param name="target" value="gentable"/>
+		</antcall>
+	</target>
+
+	<target name="clean">
+	  <delete dir="autogen"/>
+	  <delete dir="src/autogen"/>
+	  <antcall target="rebuild"/>
+	</target>
+	
+	<target name="runAll" depends="setup,genScanner,rebuild">
+	    <!--fail message="Need to have target set" unless="target"/-->
+		<antcall target="runTargetCup">
+			<param name="cupfile" value="good1"/>
+		</antcall>
+		<antcall target="runTargetCup">
+			<param name="cupfile" value="good2"/>
+		</antcall>
+		<antcall target="runTargetCup">
+			<param name="cupfile" value="good3"/>
+		</antcall>
+		<antcall target="runTargetCup">
+			<param name="cupfile" value="good4"/>
+		</antcall>
+		<antcall target="runTargetCup">
+			<param name="cupfile" value="bad1"/>
+		</antcall>
+	</target>
+
+	
+	<target name="runTargetCup">
+      <fail message="Internal target, cannot be called from outside" unless="target"/>
+      <fail message="Internal target, cannot be called from outside" unless="cupfile"/>
+	  <echo message="Running target: ${target}"/>
+	  <antcall target="${target}">
+	     <param name="cupfile" value="${cupfile}"/>
+	  </antcall>
+	  <antcall target="rebuild"/>
+	</target>
+	
+
+	<target name="processcup">
+		<fail message="Internal target, cannot be called from outside" unless="cupfile"/>
+		<echo level="info" message="Processing ${cupfile}"/>
+		<java classname="lab3.RLgram"  fork="true" failonerror="false" output="autogen/${cupfile}.cup.out">
+			<classpath>
+				<pathelement path="bin"/>
+			</classpath>
+			<arg value="TestFiles/${cupfile}.cup"/>
+		</java>
+        <antcall target="rebuild"/>
+	</target>
+		
+	<target name="gentable">
+	   <fail message="Internal target, cannnot be called from outside" unless="cupfile"/>
+	   <java jar="Tools/maketable.jar" input="autogen/${cupfile}.cup.out" output="autogen/${cupfile}.table" fork="true" failonerror="false"/>
+    </target>
+	
+	<target name="setup">
+		<mkdir dir="src/autogen"/>
+		<mkdir dir="autogen"/>
+	</target>
+	
+	<target name="rebuild">
+		<eclipse.refreshLocal resource="CSE431-Lab1" depth="infinite"/>
+		<eclipse.incrementalBuild project="CSE431-Lab1" kind="full"/>		
+	</target>
+		
+    <property 
+       name="jflex.jar" 
+       value="${toolpath}/JFlex.jar"/>
+	
+	
+<target name="genScanner.depend">
+	<condition property="genScanner.uptodate">
+		<uptodate srcfile="scanner.jflex" targetfile="src/autogen/Scanner.java"/>
+	</condition>
+
+</target>
+
+<target name="genScanner" depends="genScanner.depend" unless="genScanner.uptodate">
+	<java jar="${jflex.jar}"
+		fork="true"
+		failonerror="true"
+		>
+		<arg value="-d"/>  <arg value="src/autogen"/>
+		<arg value="-nobak"/>
+		<arg value="scanner.jflex"/>
+   </java>
+</target>
+	
+
+</project>

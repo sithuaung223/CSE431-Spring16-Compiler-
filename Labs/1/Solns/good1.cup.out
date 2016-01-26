@@ -1,0 +1,8 @@
+Start S
+Edge S Rest zero
+Edge S Rest one
+Edge Rest D plus
+Edge Rest D minus
+Edge D $FINAL$ zero
+Edge D $FINAL$ one
+Edge D $FINAL$ really
