@@ -1,3 +1,17 @@
+/**
+ * CSE 431 Lab 1
+ * 
+ * Evan Schwartzman
+ * Si Thu Aung
+ * 
+ * We treated special tokens such as terminal as regular strings and had them mimic that behavior in many instances
+ * Our thinking was that, if such a keyword was meant to be a string, and not the keyword, it should be accepted, and that if it was
+ * meant to be the actual keyword, it would inevitably fail later on, so it was okay to do this
+ * After the DFA reads in the Starts with part, it enters a sub loop designed only for reading productions
+ * 
+ * It passes all test files, except the bad one is not thread safe, but still has correct stream output
+ */
+
 package lab3;
 
 import java.util.Enumeration;
@@ -63,13 +77,9 @@ public class Fsa {
 };
 
    public Fsa(Enumeration e) {
-      // Uncomment the line below and each token processed will be echoed.
-       //((TokenEnum)e).setDebug(true);
-
       SymbolTable symboltable = new SymbolTable();
 
       int state = 0;
-      boolean counter = false;
       String 
          lhs     = "", 
          term    = "", 
@@ -83,39 +93,39 @@ public class Fsa {
          int newstate = GOTO[state][t.type()];
 
          switch (action) {
-            case  1: /* do nothing */
+            case  1: /* do nothing 	*/
                      break;
-            case  2:
+            case  2: /* fail 		*/
             	oops(t.strValue());
-            case  3:
+            case  3: /* mark value terminal	*/ 
             	symboltable.enterTerminal(t.strValue());
             	break;
-            case  4:
+            case  4: /* mark value non terminal */
             	symboltable.enterNonTerminal(t.strValue());
             	break;
-            case  5:
+            case  5: /* set left hand edge */
             	if (symboltable.isTerminal(t.strValue()) == false ){
             		lhs = t.strValue();
             		break;
             	}else if (symboltable.isTerminal(t.strValue())){
-            		oops(t.strValue());
+            		oops("Expected non terminal:" + " " + t.strValue());
             	}
-            case  6:
+            case  6: /* set terminal value */
             	if (symboltable.isTerminal(t.strValue()) == false ){
-            		oops(t.strValue());
+            		oops("Expected terminal:" + " " + t.strValue());
             	}else if (symboltable.isTerminal(t.strValue())){
             		term = t.strValue();
             		break;
             	}
-            case  7:
+            case  7: /* set non terminal value and print out string */
             	if (symboltable.isTerminal(t.strValue()) == false ){
             		nonterm = t.strValue();
             		System.out.println("Edge" + " "+lhs + " " + nonterm + " " + term );
             		break;
             	}else if (symboltable.isTerminal(t.strValue())){
-            		oops(t.strValue());
+            		oops("Expected non terminal:" + " " + t.strValue());
             	}
-            case  8:
+            case  8: /* set non terminal value and print out string if we are in final stage */
             	if (symboltable.isTerminal(nonterm) == false ){
             		nonterm = "$FINAL$";
             		System.out.println("Edge" + " "+lhs + " " + nonterm + " " + term );
@@ -123,13 +133,13 @@ public class Fsa {
             	}else if (symboltable.isTerminal(t.strValue())){
             		oops(t.strValue()); 
             	}
-            case  9:
+            case  9: /* print out the term that follows 'start with' */
             	System.out.println("Start" + " "+t.strValue());
             	break;
          }
          state = newstate;
       }
-      if (state != 16) oops("End in bad state: " + state);
+      if (state != 16) oops("End in bad state: " + state); //fail if it does not end in the accepting state (state 16)
    }
 
    void oops(String s) {
