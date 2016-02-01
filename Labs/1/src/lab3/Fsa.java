@@ -101,11 +101,11 @@ public class Fsa {
             		lhs = t.strValue();
             		break;
             	}else if (symboltable.isTerminal(t.strValue())){
-            		oops(t.strValue());
+            		oops("Expected nonterminal" + " " + t.strValue()); 
             	}
             case  6:
             	if (symboltable.isTerminal(t.strValue()) == false){
-            		oops(t.strValue());
+            		oops("Expected terminal" + " " + t.strValue()); 
             	}else if (symboltable.isTerminal(t.strValue())){
             		term = t.strValue();
             		break;
@@ -116,7 +116,7 @@ public class Fsa {
             		System.out.println("Edge" + " "+lhs + " " + nonterm + " " + term );
             		break;
             	}else if (symboltable.isTerminal(t.strValue())){
-            		oops(t.strValue());
+            		oops("Expected nonterminal" + " " + t.strValue()); 
             	}
             case  8:
             	if (symboltable.isTerminal(nonterm) == false){
@@ -124,7 +124,7 @@ public class Fsa {
             		System.out.println("Edge" + " "+lhs + " " + nonterm + " " + term );
             		break;
             	}else if (symboltable.isTerminal(t.strValue())){
-            		oops(t.strValue()); 
+            		oops("Expected nonterminal" + " " + t.strValue()); 
             	}
             case  9:
             	System.out.println("Start" + " "+t.strValue());
