@@ -1,0 +1,81 @@
+<project name="studio1" default="run" basedir=".">
+
+	<!--
+	   $Id: build.xml 28 2010-05-26 14:27:24Z cytron $
+	-->
+
+
+	<taskdef description="Translate a JFlex specification into Yylex.java" name="jflex" classname="JFlex.anttask.JFlexTask" classpath="Tools/JFlex.jar" />
+
+	<!-- Run the generated program -->
+
+	<target name="run" depends="compile">
+		<java classname="autogen.Yylex" fork="true" failonerror="true" logError="true">
+
+			<arg value="TestFiles/input" />
+
+			<classpath>
+				<pathelement path="bin" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="clean">
+		<delete>
+			<fileset dir="." includes="**/*.class" />
+		</delete>
+		<delete file="studio1.zip" />
+		<delete dir="src/autogen" />
+		<antcall target="refresh" />
+	</target>
+
+
+
+	<!-- Our compiler tools generate Java source files.
+		Eclipse needs to refresh its workspace to see them,
+		and then we want them compiled along with our files. -->
+
+	<target name="refresh">
+		<eclipse.refreshLocal resource="CSE431-Studio1" depth="infinite" />
+		<eclipse.incrementalBuild project="CSE431-Studio1" kind="full" />
+	</target>
+
+	<!-- Run JFlex on our studio jflex file -->
+
+	<target name="genScanner" depends="genScanner.depend" unless="genScanner.upToDate">
+		<jflex file="studio1.jflex" destdir="src" nobak="true" />
+	</target>
+
+	<!-- Compile everything (Just Yylex really).  
+	     Yes, eclipse would do this for you
+	     on its own BUT it would do so at its leisure.  You cannot count
+	     on the .class files to be ready if we just go from generating the
+	     scanner to running it.
+	     -->
+
+	<target name="compile" depends="genScanner">
+		<antcall target="refresh" />
+	</target>
+
+	<!-- 
+	     The scanner is up to date if the Yylex.java file is newer than studio1.jflex
+	     We could just let it generate a new scanner each time we want to run, BUT
+	        1) Running JFlex is slow - the slowest step in building our compiler
+	        2) I want to give you the chance to modify Yylex by hand if you want
+	     -->
+
+	<target name="genScanner.depend">
+		<uptodate property="genScanner.upToDate" targetfile="Yylex.java" srcfile="studio1.jflex" />
+	</target>
+
+	<!--target name="dist" depends="clean">
+	     <zip destfile="studio1.zip">
+	       <fileset dir="." 
+	          includes="**/*"
+	       />
+	     </zip>
+	   </target-->
+
+
+
+</project>

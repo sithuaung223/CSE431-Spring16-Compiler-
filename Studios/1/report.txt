@@ -1,0 +1,30 @@
+Studio 3 group report
+
+   Team member names:
+   
+   
+   
+
+      
+-------------------------
+
+Session notes and findings:
+
+
+
+
+
+---------------------------
+
+Near end of session, please fill out:
+
+Generally, how does JFlex work?
+
+What role do patterns and actions play in JFlex?
+
+What is the output of JFlex?
+
+Was this studio useful?  Please provide any feedback below:
+
+-------------
+$Id: report.txt 13 2010-01-07 23:46:54Z cytron $
