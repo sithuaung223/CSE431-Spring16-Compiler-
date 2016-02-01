@@ -56,5 +56,14 @@ NotSlashMinus = [^/-]
  */
 
 
+/*
+* ("a" | "b" | "c")+!(\1)	{found("identifier");}
+*/
 "hello"			{ found("greeting"); }
+"goodbye"		{ found("goodbye"); System.exit(0);	 }
+"evan" | "ethan" | "SiThu"		{ found("names"); }
+"h"("0"|"1")*"1"("0"|"1")("0"|"1") {found("1 2 away");}
+"h"("0"|"1")*"1"("0"|"1"){3} {found("3 away");}
+"0"*"1""0"*"1"("0"|"1")*		{ found("at least 2 1's");}	
+(("0"|"1")*"0")				{ found("even_0"); }
 ("0"|"1")+		{ found("binary integer"); }
