@@ -1,0 +1,6 @@
+Start with
+Edge with non start
+Edge with $FINAL$ terminal
+Edge non non terminal
+Edge non $FINAL$ terminal
+Edge non $FINAL$ start

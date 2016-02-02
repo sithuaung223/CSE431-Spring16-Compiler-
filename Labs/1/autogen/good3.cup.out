@@ -1,0 +1,8 @@
+Start String
+Edge String Id letter
+Edge String Num digit
+Edge Id Id letter
+Edge Id Id digit
+Edge Id $FINAL$ blank
+Edge Num Num digit
+Edge Num $FINAL$ blank
