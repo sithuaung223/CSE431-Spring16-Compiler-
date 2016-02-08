@@ -1,0 +1,81 @@
+package autogen;
+import java_cup.runtime.*;
+import lab2.IntPair;
+import common.Listing;
+
+// $Id: addhaque.cup 49 2010-05-23 21:25:22Z cytron $
+
+terminal Integer number;
+terminal         plus, minus, sum, product, times, negate, mean;
+terminal         lparen, rparen;
+
+non terminal Integer  Program, File, Lists, List, Expression;
+non terminal Integer  Operand1, Operand2, Atom, Operand, Operands;
+
+start with Program;
+
+Program
+	::= File
+	;
+
+File   
+	::= Lists
+	;
+
+Lists
+	::= Lists List:L
+		{: Listing.get().EmitMessage("Value: " + L.intValue()); :}
+	|   List:L
+		{: Listing.get().EmitMessage("Value: " + L.intValue()); :}
+	;
+
+List
+	::= lparen Expression:Ex rparen
+		{: RESULT = new Integer(0); :}
+	;
+
+Expression
+	::= plus    Operand1:Op1 Operand2:Op2
+		{: RESULT = new Integer(0); :}
+	|   minus   Operand1:Op1 Operand2:Op2
+		{: RESULT = new Integer(0); :}
+	|   times   Operand1:Op1 Operand2:Op2
+		{: RESULT = new Integer(0); :}
+	|   negate  Operand:Op
+		{: RESULT = new Integer(0); :}
+	|   sum     Operands:SOs
+		{: RESULT = new Integer(0); :}
+	|   product Operands:POs
+		{: RESULT = new Integer(0); :}
+	|   mean    Operands:MOs
+		{: RESULT = new Integer(0); :}
+	;
+
+Operand1
+	::= Atom:At
+		{: RESULT = new Integer(0); :}
+	;
+
+Operand2
+	::= Atom:At
+		{: RESULT = new Integer(0); :}
+	;
+
+Operand
+	::= Atom:At
+		{: RESULT = new Integer(0); :}
+	;
+
+Operands
+	::= Operands:Ops Operand:Op
+		{: RESULT = new Integer(0); :}
+	|   Operand:Op
+		{: RESULT = new Integer(0); :}
+	;
+
+Atom
+	::= List:L
+		{: RESULT = L; :}
+	|   number:nu
+		{: RESULT = nu; :}
+	;

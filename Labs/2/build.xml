@@ -1,0 +1,96 @@
+<project name="lab2" default="build" basedir=".">
+
+	<!--
+	   $Id: build.xml 63 2010-05-27 15:34:13Z cytron $
+	-->
+
+	<property name="cup.jar" value="Tools/java-cup-11a.jar" />
+
+	<property name="jflex.jar" value="Tools/JFlex.jar" />
+
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="Tools/ant-contrib-0.6.jar" />
+		</classpath>
+	</taskdef>
+
+	<taskdef description="Translate a JFlex specification into Yylex.java" name="jflex" classname="JFlex.anttask.JFlexTask" classpath="${jflex.jar}" />
+
+	<taskdef description="Translate a CUP specification into a parser and symbol file" name="cup" classname="java_cup.anttask.CUPTask" classpath="${cup.jar}" />
+
+	<target name="build" depends="setup,genScanner,genParser,symUpdate1,symUpdate2">
+		<antcall target="refresh" />
+	</target>
+
+	<target name="clean">
+		<delete>
+			<fileset dir="." includes="**/*.class" />
+		</delete>
+		<delete dir="src/autogen" />
+		<antcall target="refresh" />
+	</target>
+
+	<target name="tdn" depends="build">
+		<antcall target="forEachTestFile">
+			<param name="method" value="tdn" />
+		</antcall>
+	</target>
+
+	<target name="refresh">
+		<eclipse.refreshLocal resource="CSE431-Lab2" depth="infinite" />
+		<eclipse.incrementalBuild project="CSE431-Lab2" kind="full" />
+	</target>
+
+	<target name="setup">
+		<mkdir dir="src/autogen" />
+	</target>
+
+	<target name="symUpdate1" depends="sym1.check" unless="sym1.valid">
+		<touch file="src/autogen/Yylex.java" />
+	</target>
+
+	<target name="sym1.check">
+		<uptodate property="sym1.valid" targetfile="src/autogen/Yylex.java" srcfile="src/autogen/sym.java" />
+	</target>
+
+	<target name="symUpdate2" depends="sym2.check" unless="sym2.valid">
+		<touch file="src/lab2/RecursiveDescent.java" />
+		<touch file="src/lab2/tdn.java" />
+	</target>
+
+	<target name="sym2.check">
+		<uptodate property="sym2.valid" targetfile="src/lab2/RecursiveDescent.java" srcfile="src/autogen/sym.java" />
+	</target>
+
+
+	<target name="genParser">
+		<cup srcfile="${basedir}/addhaque.cup" destdir="${basedir}/src" parser="Parser" quiet="true" />
+	</target>
+
+	<target name="genScanner" depends="genParser">
+		<jflex file="scanner.jflex" destdir="src" nobak="true" />
+	</target>
+
+	<target name="runOneFile" depends="build">
+		<echo message="Parsing technique ${method} on testfile ${testfile}"/>
+		<fail message="Internal target" unless="method" />
+		<fail message="Internal target" unless="testfile" />
+		<java classname="lab2.${method}" logError="true" fork="true" failonerror="false">
+			<classpath>
+				<pathelement location="${cup.jar}" />
+				<pathelement path="bin" />
+			</classpath>
+			<arg value="${testfile}" />
+		</java>
+
+	</target>
+
+	<target name="forEachTestFile">
+		<foreach inheritall="true" delimiter="," trim="true" param="testfile" target="runOneFile">
+			<path>
+				<fileset dir="TestFiles" />
+			</path>
+		</foreach>
+	</target>
+
+</project>
