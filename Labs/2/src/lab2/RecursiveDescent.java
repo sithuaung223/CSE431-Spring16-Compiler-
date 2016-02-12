@@ -64,18 +64,18 @@ Atom
 
   * Answer to question 2:
 
-Non Terminal:	| Derives-Lambda| 						First()							| 		Follow()			|
-—————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-Program					F								(											-
-File					F								(											$
-Lists					F								(											$
-Lists_Two				T								(											$
-List					F								(										(, $, ), number
-Expression				F			plus, minus, times, negate, sum, product, mean					)
-Operand					F								(, number								(, ), number
-Operands				F								(, number									)
-Operands_Two			T								(, number									)
-Atom					F								(, number								(, ), number
+Non Terminal:	First()												 		Follow()			
+
+Program             (															-
+File                (															$
+Lists               (															$
+Lists_Two           (															$
+List                (														(, $, ), number
+Expression          plus, minus, times, negate, sum, product, mean				)
+Operand             (, number												(, ), number
+Operands            (, number													)
+Operands_Two        (, number													)
+Atom                (, number												(, ), number
 
   * Answer to question 4:
 
