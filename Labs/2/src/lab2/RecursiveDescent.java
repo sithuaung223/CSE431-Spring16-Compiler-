@@ -1,3 +1,10 @@
+/**
+ * CSE 431 Lab2
+ * 
+ * Evan Schwartzman
+ * Si Thu Aung
+ */
+
 package lab2;
 import autogen.*;
 import java_cup.runtime.*;
@@ -5,10 +12,70 @@ import common.Listing;
 
 /**
   * Answer to question 1:
+  
+Program
+	::= File
+	;
 
+File   
+	::= Lists
+	;
+
+Lists
+	::= List Lists_Two
+	;
+
+Lists_Two
+	::= List Lists_Two
+	|   lamda
+	;
+
+List
+	::= lparen Expression rparen
+	;
+
+Expression
+	::= plus    Operand Operand
+	|   minus   Operand Operand
+	|   times   Operand Operand
+	|   negate  Operand
+	|   sum     Operands
+	|   product Operands
+	|   mean    Operands
+	;
+
+Operand
+	::= Atom
+	;
+
+Operands
+	::= Operand Operands_Two
+	;
+
+Operands_Two
+	::= Operand Operands_Two
+	|   lamda
+	;
+
+Atom
+	::= List
+	|   number
+	;
 
   * Answer to question 2:
 
+Non Terminal:	| Derives-Lambda| 						First()									| 		Follow()			|
+—————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+Program			|	F	 		|	  						(									|	  		—				|
+File			|	F	 		|	  						(									|	  		$				|
+Lists			|	F	 		|	  						(									|	  		$				|
+Lists_Two		|	T	 		|	  						(									|	  		$				|
+List			|	F	 		|	  						(									|   	(, $, ), number		|
+Expression		|	F	 		| 		plus, minus, times, negate, sum, product, mean			|         	)				|
+Operand			|	F	 		|						(, number								|     	(, ), number		|
+Operands		|	F	 		|						(, number								|	   		)				|
+Operands_Two	|	T	 		|						(, number								|	   		)				|
+Atom			|	F	 		|						(, number								|     	(, ), number		|
 
   * Answer to question 4:
 
@@ -18,7 +85,6 @@ public class RecursiveDescent {
 
    public RecursiveDescent() {
       Scanner.init();
-	
       Program();
       
    }
@@ -28,7 +94,7 @@ public class RecursiveDescent {
 	   if (t.sym == sym.lparen){
 		   File();
 	   }else{
-		   oops("no" + " " + t + " " + "Program");
+		   oops("Expected: left parenthesis in Program");
 	   }
    }
    
@@ -37,7 +103,7 @@ public class RecursiveDescent {
 	   if (t.sym == sym.lparen){
 		   Lists();
 	   }else{
-		   oops("no" + " " + t + " "+" File");
+		   oops("Expected: left parenthesis in File");
 	   }
    }
 
@@ -47,7 +113,7 @@ public class RecursiveDescent {
 		   List();
 		   Lists_Two();
 	   }else{
-		   oops("no" + " " + t+ " " + "Lists");
+		   oops("Expected: left parenthesis in Lists");
 	   }
    }
    
@@ -58,7 +124,7 @@ public class RecursiveDescent {
 		   Lists_Two();  
 	   }else if(t.sym == sym.EOF){ //lamda
 	   }else{
-		   oops("no" + " " + t+ " " + "Lists_Two");
+		   oops("Expected: left parenthesis or lambda in Lists_Two");
 	   }
    }
    
@@ -71,41 +137,27 @@ public class RecursiveDescent {
 		   if (t.sym == sym.rparen){
 			   Scanner.advance();
 		   }else{
-			   oops("no rparen" + " " + t+ " " + "List"); 
+			   oops("Expected: right parenthesis in List"); 
 		   }
 	   }else{
-		   oops("no" + " " + t+ " " + "List");
+		   oops("Expected: left parenthesis in List");
 	   }
    }
    
    void Expression(){
 	   Symbol t = Scanner.peek();
-	   if (t.sym == sym.plus){
-		   Scanner.advance();
-		   Operand();
-		   Operand();
-	   }else if(t.sym == sym.minus){
-		   Scanner.advance();
-		   Operand();
-		   Operand();
-	   }else if(t.sym == sym.times){
+	   if (t.sym == sym.plus || t.sym == sym.minus || t.sym == sym.times){
 		   Scanner.advance();
 		   Operand();
 		   Operand();
 	   }else if(t.sym == sym.negate){
 		   Scanner.advance();
 		   Operand();
-	   }else if(t.sym == sym.sum){
-		   Scanner.advance();
-		   Operands();
-	   }else if(t.sym == sym.product){
-		   Scanner.advance();
-		   Operands();
-	   }else if(t.sym == sym.mean){
+	   }else if(t.sym == sym.sum || t.sym == sym.product || t.sym == sym.mean){
 		   Scanner.advance();
 		   Operands();
 	   }else{
-		   oops("no" + " " + t+ " " + "Expression");
+		   oops("Error in Expression");
 	   }
    }
    
@@ -114,7 +166,7 @@ public class RecursiveDescent {
 	   if (t.sym == sym.number || t.sym == sym.lparen){
 		   Atom();
 	   }else{
-		   oops("no" + " " + t+ " " + "Operand");
+		   oops("Expected: left parenthesis or number in Operand");
 	   }
    }
    
@@ -124,7 +176,7 @@ public class RecursiveDescent {
 		   Operand();
 		   Operands_Two();
 	   }else{
-		   oops("no" + " " + t+ " " + "Operands");
+		   oops("Expected: left parenthesis or number in Operands");
 	   }
    }
    
@@ -136,7 +188,7 @@ public class RecursiveDescent {
 		   t = Scanner.peek();
 	   }else if(t.sym == sym.rparen){
 	   }else{
-		   oops("no" + " " + t+ " " + "Operands_Two");
+		   oops("Expected: left parenthesis or number in Operands_Two");
 	   }
    }
    
@@ -147,7 +199,7 @@ public class RecursiveDescent {
 	   }else if (t.sym == sym.number){
 		   Scanner.advance();
    	   }else{
-		   oops("no" + " " + t+ " " + "Atom");
+		   oops("Expected: left parenthesis or number in Operand");
 	   } 
    }
    
