@@ -66,16 +66,16 @@ Atom
 
 Non Terminal:	First()												 		Follow()			
 
-Program             (															-
-File                (															$
-Lists               (															$
-Lists_Two           (															$
-List                (														(, $, ), number
-Expression          plus, minus, times, negate, sum, product, mean				)
-Operand             (, number												(, ), number
-Operands            (, number													)
-Operands_Two        (, number													)
-Atom                (, number												(, ), number
+Program             (                                                           -
+File                (                                                           $
+Lists               (                                                           $
+Lists_Two           (                                                           $
+List                (                                                       (, $, ), number
+Expression          plus, minus, times, negate, sum, product, mean              )
+Operand             (, number                                               (, ), number
+Operands            (, number                                                   )
+Operands_Two        (, number                                                   )
+Atom                (, number                                               (, ), number
 
   * Answer to question 4:
 
