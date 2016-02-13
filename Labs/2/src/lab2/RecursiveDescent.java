@@ -64,7 +64,7 @@ Atom
 
   * Answer to question 2:
 
-Non Terminal:	First()												 		Follow()			
+Non Terminal:	First()                                                  Follow()			
 
 Program             (                                                           -
 File                (                                                           $
