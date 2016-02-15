@@ -1,0 +1,73 @@
+<project name="studio2" default="build" basedir=".">
+
+	<!--
+	   $Id: build.xml 39 2010-05-26 14:27:46Z cytron $
+	-->
+
+	<property name="cup.jar" value="Tools/java-cup-11a.jar" />
+
+	<property name="jflex.jar" value="Tools/JFlex.jar" />
+
+	<taskdef description="Translate a JFlex specification into Yylex.java" name="jflex" classname="JFlex.anttask.JFlexTask" classpath="${jflex.jar}" />
+
+	<taskdef description="Translate a CUP specification into a parser and symbol file" name="cup" classname="java_cup.anttask.CUPTask" classpath="${cup.jar}" />
+
+	<target name="build" depends="setup,genScanner,genParser,symUpdate1,symUpdate2">
+		<antcall target="refresh" />
+	</target>
+
+	<target name="clean">
+		<delete>
+			<fileset dir="." includes="**/*.class" />
+		</delete>
+		<delete dir="src/autogen" />
+		<antcall target="refresh" />
+	</target>
+
+
+	<target name="refresh">
+		<eclipse.refreshLocal resource="CSE431-Studio2" depth="infinite" />
+		<eclipse.incrementalBuild project="CSE431-Studio2" kind="full" />
+	</target>
+
+	<target name="setup">
+		<mkdir dir="src/autogen" />
+	</target>
+
+	<target name="symUpdate1" depends="sym1.check" unless="sym1.valid">
+		<touch file="src/autogen/Yylex.java" />
+	</target>
+
+	<target name="sym1.check">
+		<uptodate property="sym1.valid" targetfile="src/autogen/Yylex.java" srcfile="src/autogen/sym.java" />
+	</target>
+
+	<target name="symUpdate2" depends="sym2.check" unless="sym2.valid">
+		<touch file="src/studio2/RecursiveDescent.java" />
+		<touch file="src/studio2/Main.java" />
+	</target>
+
+	<target name="sym2.check">
+		<uptodate property="sym2.valid" targetfile="src/studio2/RecursiveDescent.java" srcfile="src/autogen/sym.java" />
+	</target>
+
+
+	<target name="genParser">
+		<cup srcfile="${basedir}/terminalsymbols.cup" destdir="${basedir}/src" parser="Parser" quiet="true" />
+	</target>
+
+	<target name="genScanner" depends="genParser">
+		<jflex file="scanner.jflex" destdir="src" nobak="true" />
+	</target>
+
+	<target name="run" depends="build">
+		<java classname="studio2.Main" logError="true" fork="true" failonerror="true">
+			<classpath>
+				<pathelement location="${cup.jar}" />
+				<pathelement path="bin" />
+			</classpath>
+		</java>
+
+	</target>
+
+</project>

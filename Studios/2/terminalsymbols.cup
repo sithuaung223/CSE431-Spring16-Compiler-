@@ -1,0 +1,20 @@
+package autogen;
+
+/* $Id: terminalsymbols.cup 23 2010-05-08 15:49:37Z cytron $ */
+
+terminal         a, b, c, d, e;
+terminal         lparen, rparen, x;
+terminal         semi, comma, INT, FLOAT;
+terminal         o, p, q;
+terminal         IF, ELSE, FI, y;
+terminal Integer num;
+terminal         plus, minus, times, divide;
+terminal String  id;
+
+non terminal     Dummy;
+
+
+Dummy
+	::= 
+	;
+
