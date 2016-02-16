@@ -3,6 +3,7 @@
  * 
  * Evan Schwartzman
  * Si Thu Aung
+ * 
  */
 
 package lab2;
@@ -113,7 +114,7 @@ public class RecursiveDescent {
    int Lists(){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
-		   int l = List();
+		   int l = List(true);
 		   return Lists_Two(l);
 	   }else{
 		   oops("Expected: left parenthesis in Lists");
@@ -124,7 +125,7 @@ public class RecursiveDescent {
    int Lists_Two(int a){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
-		   int l = List();	   
+		   int l = List(true);
 		   return Lists_Two(l);  
 	   }else if(t.sym == sym.EOF){ 
 	   }else{
@@ -133,14 +134,17 @@ public class RecursiveDescent {
 	   return 0;
    }
    
-   int List(){
+   int List(boolean print){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
 		   Scanner.advance();
 		   int e = Expression();
 		   t = Scanner.peek();
 		   if (t.sym == sym.rparen){
-			 System.out.print(e);
+			 if(print){
+				 System.out.println();
+				 System.out.print("ANSWER IS "+e);
+			 }
 			 Scanner.advance();
 			 return e;
 		   }else{
@@ -226,7 +230,6 @@ public class RecursiveDescent {
 	   }else{
 		   oops("Expected: left parenthesis or number in Operands");
 	   }
-	   //ArrayList<Integer> list= new ArrayList<Integer>();
 	return null;
    }
    
@@ -236,7 +239,6 @@ public class RecursiveDescent {
 		   int o = Operand();
 		   l.add(o);
 		   return Operands_Two(l);
-		   //t = Scanner.peek();
 	   }else if(t.sym == sym.rparen){
 		   return l;
 	   }else{
@@ -248,7 +250,7 @@ public class RecursiveDescent {
    int Atom(){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
-		  return List();
+		  return List(false);
 	   }else if (t.sym == sym.number){
 		   Scanner.advance();
 		   return (int) t.value;
