@@ -6,6 +6,8 @@
  */
 
 package lab2;
+import java.util.ArrayList;
+
 import autogen.*;
 import java_cup.runtime.*;
 import common.Listing;
@@ -135,10 +137,9 @@ public class RecursiveDescent {
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
 		   Scanner.advance();
-		   int r = Expression();
+		   System.out.print(" "+Expression());
 		   t = Scanner.peek();
 		   if (t.sym == sym.rparen){
-			   System.out.print(r);
 			   Scanner.advance();
 		   }else{
 			   oops("Expected: right parenthesis in List"); 
@@ -172,13 +173,31 @@ public class RecursiveDescent {
 		   return (-1)*o;
 	   }else if(t.sym == sym.sum){
 		   Scanner.advance();
-		   Operands();
+		   ArrayList<Integer> temp = new ArrayList<Integer>();
+		   temp = Operands();
+		   int sum = 0;
+		   for (int i = 0; i < temp.size(); i++){
+			   sum += temp.get(i);
+		   }
+		   return sum;
 	   }else if(t.sym == sym.product){
 		   Scanner.advance();
-		   Operands();
+		   ArrayList<Integer> temp = new ArrayList<Integer>();
+		   temp = Operands();
+		   int product = 1;
+		   for (int i = 0; i < temp.size()-1; i++){
+			   product *= temp.get(i);
+		   }
+		   return product;
 	   }else if(t.sym == sym.mean){
 		   Scanner.advance();
-		   Operands();
+		   ArrayList<Integer> temp = new ArrayList<Integer>();
+		   temp = Operands();
+		   int mean = 0;
+		   for (int i = 0; i < temp.size(); i++){
+			   mean += temp.get(i);
+		   }
+		   return (mean / temp.size());
 	   }else{
 		   oops("Error in Expression");
 	   }
@@ -195,26 +214,33 @@ public class RecursiveDescent {
 	   return 0;
    }
    
-   void Operands(){
+   ArrayList<Integer> Operands(){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.number || t.sym == sym.lparen){
-		   Operand();
-		   Operands_Two();
+		   int o = Operand();
+		   ArrayList<Integer> list= new ArrayList<Integer>();
+		   list.add(o);
+		   return Operands_Two(list);
 	   }else{
 		   oops("Expected: left parenthesis or number in Operands");
 	   }
+	   //ArrayList<Integer> list= new ArrayList<Integer>();
+	return null;
    }
    
-   void Operands_Two(){
+   ArrayList<Integer> Operands_Two(ArrayList<Integer> l){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.number || t.sym == sym.lparen){
-		   Operand();
-		   Operands_Two();
-		   t = Scanner.peek();
+		   int o = Operand();
+		   l.add(o);
+		   return Operands_Two(l);
+		   //t = Scanner.peek();
 	   }else if(t.sym == sym.rparen){
+		   return l;
 	   }else{
 		   oops("Expected: left parenthesis or number in Operands_Two");
 	   }
+	   return null;
    }
    
    int Atom(){
