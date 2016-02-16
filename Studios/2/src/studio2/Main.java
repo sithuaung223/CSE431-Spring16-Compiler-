@@ -1,7 +1,7 @@
 package studio2;
+import java_cup.runtime.Symbol;
 import common.Listing;
 import common.OpenFile;
-
 import autogen.*;
 
 // $Id: Main.java 26 2010-05-08 18:06:55Z cytron $
@@ -10,9 +10,9 @@ import autogen.*;
   * Studio 2.
   *
   * People in this group...
-  *  Name:
-  *  Name:
-  *  Name:
+  *  Name: Evan Schwartzman
+  *  Name: Si Thu Aung
+  *  Name: Ethan Vaughan
   *
   */
 public class Main {
@@ -26,8 +26,8 @@ public class Main {
  
       // Part 1, uncomment below as you go
 
-      // new MatchingParens().run();
-      // new Problem1a().run();
+      //new MatchingParens().run();
+      //new Problem1a().run();
       // new Problem1d().run();
 
       // Part 2, uncomment below as you go
@@ -37,7 +37,7 @@ public class Main {
 
       // Part 3, uncomment below when you get here
       // The parser for this is done, see the studio instructions
-      // new Expressions().run();
+       new Expressions().run();
 
       // Part 4, 20 minutes, leave this uncommented, just work on the grammar
       // new IfThenElse().run();
@@ -91,8 +91,8 @@ class Example extends RecursiveDescent {
   *    by completing the S() method and writing other methods as needed
   *
   *                              Predicted by:
-      S  ->  lparen S rparen        ?
-          |  x                      ?
+      S  ->  lparen S rparen        lparen
+          |  x                      x
   */
 
 class MatchingParens extends RecursiveDescent {
@@ -108,16 +108,27 @@ class MatchingParens extends RecursiveDescent {
 
    /** Fill me in */
    public void S() {
+	   if (Scanner.peek().sym == sym.lparen){
+		   Scanner.advance();
+		   S();
+		   if (Scanner.peek().sym == sym.rparen){
+			   Scanner.advance();
+		   }
+	   }else if (Scanner.peek().sym == sym.x){
+		   Scanner.advance();
+	   }else{
+		   oops("fail");
+	   }
    }
 
 }
 
 /**                   Predicted by:
-   S ->  A B c            ?
-   A ->  a                ?
-      |  lambda           ?
-   B ->  b                ?
-      |  lambda           ?
+   S ->  A B c            a,b,c
+   A ->  a                a
+      |  lambda           b,c
+   B ->  b                b
+      |  lambda           c
  */
 
 class Problem1a extends RecursiveDescent {
@@ -134,6 +145,28 @@ class Problem1a extends RecursiveDescent {
 
    /** Fill me in */
    public void S() {
+	   A();
+	   B();
+	   expect(sym.c);
+   }
+   
+   public void A() {
+	   if (Scanner.peek().sym == sym.a){
+		   Scanner.advance();
+	   } else if (Scanner.peek().sym == sym.b || Scanner.peek().sym == sym.c){
+	   }else{
+		   oops("no");
+	   }
+   }
+   
+   public void B() {
+	   if (Scanner.peek().sym == sym.b){
+		   Scanner.advance();
+	   } else if (Scanner.peek().sym == sym.c){
+		   
+	   }else{
+		   oops("no");
+	   }
    }
 
 }
@@ -182,6 +215,18 @@ class Problem1d extends RecursiveDescent {
             |  FLOAT
 
   *  Your transformed grammar and its predict sets:
+  *  
+  *   S    ->  Dcls						int, float
+      Dcls ->  Dcl More_Dcls			int, float
+      More_Dcls-> Dcl More_Dcls			int, float
+            |  lamda					eof
+      Dcl  ->  Type Vars semi			int, float
+      Vars -> Var1 Var2 				id
+      Var1 -> id						id
+      Var2 -> comma id Var2				comma
+      		| lamda						semi
+      Type ->  INT						int
+            |  FLOAT					float
   */
 
 class Declarations extends RecursiveDescent {
@@ -268,39 +313,45 @@ class Expressions extends RecursiveDescent {
 
    /** Fill me in */
    public void S() {
-	   E();
+	   System.out.println( "answer: " +E() );
    }
-   public void E() {
-	   if (peek() == sym.num) {
-		   T();
-		   EPrime();
+   public int E() {
+	   Symbol t = Scanner.peek();
+	   if (t.sym == sym.num) {
+		   int u  = T(0);
+		   int y = EPrime(u);
+		   return y;
 	   }
-	   else oops("error");
+	   return 0;
    }
-   public void EPrime() {
+   public int EPrime(int c) {
 	   if (peek() == sym.plus) {
 		   expect(sym.plus);
-		   T();
-		   EPrime();
+		   int p = c+T(c);
+		   int n = EPrime(p);
+		   return n;
 	   }
-	   else if (peek() == sym.EOF) return;
-	   else oops("error");
+	   else if (peek() == sym.EOF) {};
+	   return c;
    }
-   public void T() {
-	   if (peek() == sym.num) {
+   public int T(int b) {
+	   Symbol t = Scanner.peek();
+	   if (t.sym == sym.num) {
 		   expect(sym.num);
-		   TPrime();
+		   return TPrime((int) t.value);
 	   }
-	   else oops("error");
+	   return b;
    }
-   public void TPrime() {
-	   if (peek() == sym.times) {
+   public int TPrime(int a) {
+	   Symbol t = Scanner.peek();
+	   if (t.sym == sym.times) {
 		   expect(sym.times);
+		   Symbol m = Scanner.peek();
 		   expect(sym.num);
-		   TPrime();
+		   return TPrime(a* ( (int) m.value));
 	   }
-	   else if (peek() == sym.EOF || peek() == sym.plus) return;
-	   else oops("error");
+	   else if (peek() == sym.EOF || peek() == sym.plus) {};
+	   return a;
    }
 
 }
