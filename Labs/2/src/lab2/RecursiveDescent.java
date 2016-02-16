@@ -185,7 +185,7 @@ public class RecursiveDescent {
 		   ArrayList<Integer> temp = new ArrayList<Integer>();
 		   temp = Operands();
 		   int product = 1;
-		   for (int i = 0; i < temp.size()-1; i++){
+		   for (int i = 0; i < temp.size(); i++){
 			   product *= temp.get(i);
 		   }
 		   return product;
