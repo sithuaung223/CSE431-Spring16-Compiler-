@@ -98,43 +98,47 @@ public class RecursiveDescent {
 	   }
    }
    
-   void File(){
+   int File(){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
-		   Lists();
+		   return Lists();
 	   }else{
 		   oops("Expected: left parenthesis in File");
 	   }
+	   return 0;
    }
 
-   void Lists(){
+   int Lists(){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
-		   List();
-		   Lists_Two();
+		   int l = List();
+		   return Lists_Two(l);
 	   }else{
 		   oops("Expected: left parenthesis in Lists");
 	   }
+	   return 0;
    }
    
-   void Lists_Two(){
+   int Lists_Two(int a){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
-		   List();
-		   Lists_Two();  
+		   int l = List();
+		   return Lists_Two(l);  
 	   }else if(t.sym == sym.EOF){ //lamda
 	   }else{
 		   oops("Expected: left parenthesis or lambda in Lists_Two");
 	   }
+	   return 0;
    }
    
-   void List(){
+   int List(){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
 		   Scanner.advance();
-		   Expression();
+		   int r = Expression();
 		   t = Scanner.peek();
 		   if (t.sym == sym.rparen){
+			   System.out.print(r);
 			   Scanner.advance();
 		   }else{
 			   oops("Expected: right parenthesis in List"); 
@@ -142,32 +146,53 @@ public class RecursiveDescent {
 	   }else{
 		   oops("Expected: left parenthesis in List");
 	   }
+	   return 0;
    }
    
-   void Expression(){
+   int Expression(){
 	   Symbol t = Scanner.peek();
-	   if (t.sym == sym.plus || t.sym == sym.minus || t.sym == sym.times){
+	   if (t.sym == sym.plus){
 		   Scanner.advance();
-		   Operand();
-		   Operand();
+		   int o = Operand();
+		   int o2 = Operand();
+		   return o+o2;
+	   }else if(t.sym == sym.minus){
+		   Scanner.advance();
+		   int o = Operand();
+		   int o2 = Operand();
+		   return o-o2;
+	   }else if(t.sym == sym.times){
+		   Scanner.advance();
+		   int o = Operand();
+		   int o2 = Operand();
+		   return o*o2;
 	   }else if(t.sym == sym.negate){
 		   Scanner.advance();
-		   Operand();
-	   }else if(t.sym == sym.sum || t.sym == sym.product || t.sym == sym.mean){
+		   int o = Operand();
+		   return (-1)*o;
+	   }else if(t.sym == sym.sum){
+		   Scanner.advance();
+		   Operands();
+	   }else if(t.sym == sym.product){
+		   Scanner.advance();
+		   Operands();
+	   }else if(t.sym == sym.mean){
 		   Scanner.advance();
 		   Operands();
 	   }else{
 		   oops("Error in Expression");
 	   }
+	   return 0;
    }
    
-   void Operand(){
+   int Operand(){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.number || t.sym == sym.lparen){
-		   Atom();
+		   return Atom();
 	   }else{
 		   oops("Expected: left parenthesis or number in Operand");
 	   }
+	   return 0;
    }
    
    void Operands(){
@@ -192,15 +217,17 @@ public class RecursiveDescent {
 	   }
    }
    
-   void Atom(){
+   int Atom(){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
-		  List();
+		  return List();
 	   }else if (t.sym == sym.number){
 		   Scanner.advance();
+		   return (int) t.value;
    	   }else{
 		   oops("Expected: left parenthesis or number in Operand");
 	   } 
+	   return 0;
    }
    
    void oops(String s) {
