@@ -81,6 +81,9 @@ Operands_Two        (, number                                                   
 Atom                (, number                                               (, ), number
 
   * Answer to question 4:
+  
+We found the mean by adding all the numbers provided by operands() to an Arraylist. 
+We then added up all these numbers and divided by the Arraylist size to get the mean. 
 
  */
 
