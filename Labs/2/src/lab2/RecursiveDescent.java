@@ -117,19 +117,19 @@ public class RecursiveDescent {
    int Lists(){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
-		   int l = List(true);
-		   return Lists_Two(l);
+		   List(true);
+		   return Lists_Two();
 	   }else{
 		   oops("Expected: left parenthesis in Lists");
 	   }
 	   return 0;
    }
    
-   int Lists_Two(int a){
+   int Lists_Two(){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
-		   int l = List(true);
-		   return Lists_Two(l);  
+		   List(true);
+		   return Lists_Two();  
 	   }else if(t.sym == sym.EOF){ 
 	   }else{
 		   oops("Expected: left parenthesis or lambda in Lists_Two");
