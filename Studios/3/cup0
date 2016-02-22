@@ -14,10 +14,14 @@
 
 non terminal         S;
 
+
 //
 // Try out your ambiguous grammar by entering it below
 //
 
 S
-	::=	a   // not very ambiguous;  you can do better!
+	::=	S a S
+	| S b S
+	| S
+	| c   
 	;

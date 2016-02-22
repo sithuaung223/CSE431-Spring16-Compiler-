@@ -20,10 +20,21 @@
 //  See the studio instructions for ideas to investigate this issue
 //     
 
-non terminal         S;
+non terminal         S, R, L;
 
+S
+	::=	L x R;
+	
+L ::= lparen L
+	| ;
+	
+R ::= rparen R
+	| ;
+
+/*
 S
 	::=	lparen S
 	|	S rparen
 	|   x
 	;
+*/

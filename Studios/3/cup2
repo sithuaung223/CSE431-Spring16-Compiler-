@@ -14,6 +14,16 @@ non terminal     Meal;
 //  in exactly that order
 //
 
+non terminal ColumnA, ColumnB, ColumnC;
+
 Meal
-	::= eggroll
+	::= ColumnA ColumnB ColumnC
 	;
+ColumnA
+	::= eggroll | wonton | salad;
+	
+ColumnB
+	::= hotsoursoup | eggdropsoup | noodlesoup;
+	
+ColumnC
+	::= beef | tofu | shrimp | chicken;
