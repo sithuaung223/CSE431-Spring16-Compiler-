@@ -82,8 +82,8 @@ Atom                (, number                                               (, )
 
   * Answer to question 4:
   
-We found the mean by adding all the numbers provided by operands() to an Arraylist. 
-We then added up all these numbers and divided by the Arraylist size to get the mean. 
+We used an Arraylist to store all the numbers we were trying to find the mean of.
+We then iterated through the Arraylist to find the sum, and divided this sum by the Arraylist.size().
 
  */
 
@@ -130,23 +130,23 @@ public class RecursiveDescent {
 	   if (t.sym == sym.lparen){
 		   List(true);
 		   return Lists_Two();  
-	   }else if(t.sym == sym.EOF){ 
+	   }else if(t.sym == sym.EOF){
 	   }else{
 		   oops("Expected: left parenthesis or lambda in Lists_Two");
 	   }
 	   return 0;
    }
    
-   int List(boolean print){
+   int List(boolean ready_to_print){
 	   Symbol t = Scanner.peek();
 	   if (t.sym == sym.lparen){
 		   Scanner.advance();
 		   int e = Expression();
 		   t = Scanner.peek();
 		   if (t.sym == sym.rparen){
-			 if(print){
+			 if(ready_to_print){
 				 System.out.println();
-				 System.out.print("ANSWER IS "+e);
+				 System.out.print(" = "+e);
 			 }
 			 Scanner.advance();
 			 return e;
