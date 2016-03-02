@@ -1,0 +1,31 @@
+public class test {
+
+   public int x;  // should not be referenced anywhere
+
+   public void hides(int x) {
+      boolean x;
+      boolean y;
+      y = x;
+      y = z;
+   }
+
+   public void nohide(int y) {
+     java.lang.String s;
+     x = y;
+     y = s;
+   }
+
+   public void nest() {
+     int x, y;
+     {
+        int x;
+         x; y;
+         {
+            int y;
+            x; y;
+         }
+         x; y;
+     }
+  }
+
+}

@@ -1,0 +1,31 @@
+public class test {
+    private int foo;
+    public java.lang.String foo2, foo3;
+    static {
+      x = 5;
+      y = x + 3;
+      if (x) {
+         if (x) y = y - 3; else y;
+         while (x) y = y - 3;
+         while (x) {z; y = y - 3;}
+      }
+      else x;
+    }
+    public java.lang.String foo4;
+    public test(int z, java.util.Vector v) {
+       int x;
+       x = 7;
+      if (x) y = y - 3;
+      else z;
+    }
+    public void main() {
+       int x,y,z;
+       x = 3;
+       y = 4;
+       z = x + y;
+    }
+}
+public class test2 {
+}
+private class test3 {
+}
