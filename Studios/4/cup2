@@ -1,0 +1,38 @@
+package autogen;
+import common.Listing;
+
+//
+// Do NOT change the terminal alphabet for this studio
+//
+terminal         x, comma;
+terminal Integer d;
+
+non terminal         Nums;
+non terminal	 Integer Digs;
+
+//
+// Use the rules below to count the number of digits in each number
+//
+
+Nums
+	::=	Nums comma Digs:num
+		{: 
+			Listing.get().EmitMessage("Another number has " + num + " digits"); 
+		:}
+	|	Digs:num
+		{: 
+			Listing.get().EmitMessage("First number has " + num + " digits"); 
+		:}
+	;
+	
+Digs
+	::=	Digs:num d:next
+		{:
+			RESULT = null;
+		:}
+	|	d:leftmost
+		{:
+			RESULT = null;
+		:}
+	;
+

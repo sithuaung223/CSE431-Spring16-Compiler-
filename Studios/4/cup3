@@ -1,0 +1,37 @@
+package autogen;
+import common.Listing;
+
+//
+// Do NOT change the terminal alphabet for this studio
+//
+terminal         x, comma;
+terminal Integer d;
+
+non terminal         Nums;
+non terminal	 Integer Num;
+
+//
+//  Language:  mixture of decimal and hexadecimal numerals
+//     The decimal numbers have no token preceding them, but
+//     the hex numerals are preceded by an x token.  Count on
+//     the scanner to return the correct value of (10, 11, 12, 13, 14, 15)
+//     for (a, b, c, d, e, f) respectively.
+//     See the testfiles
+
+Nums
+	::=	Nums comma Num:num
+		{: 
+			Listing.get().EmitMessage("Another number is " + num); 
+		:}
+	|	Num:num
+		{: 
+			Listing.get().EmitMessage("First number is " + num); 
+		:}
+	;
+	
+Num
+	::= d   // there is so much more to this story
+		{:
+			RESULT = new Integer(0);
+		:}
+	;
