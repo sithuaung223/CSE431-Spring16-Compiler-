@@ -1,0 +1,30 @@
+package autogen;
+import common.Listing;
+terminal         x, comma;
+terminal Integer d;
+
+non terminal         Nums;
+non terminal	 Integer Digs;
+
+Nums
+	::=	Nums comma Digs:num
+		{: 
+			Listing.get().EmitMessage("Another number is " + num); 
+		:}
+	|	Digs:num
+		{: 
+			Listing.get().EmitMessage("First number is " + num); 
+		:}
+	;
+	
+Digs
+	::=	Digs:num d:next
+		{:
+			RESULT = new Integer(10*num.intValue() + next.intValue());
+		:}
+	|	d:leftmost
+		{:
+			RESULT = leftmost;
+		:}
+	;
+

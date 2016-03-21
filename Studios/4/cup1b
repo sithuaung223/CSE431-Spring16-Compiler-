@@ -1,0 +1,64 @@
+package autogen;
+import common.Listing;
+
+//
+// Group members:
+//   1)
+//   2)
+//   3)
+//
+
+//
+// Note how you can have helper classes and such compiled along with the parser
+//   This JustInt class is useful internally, so there is no need to have it outside
+//   of the parser
+//
+action code {:
+	class JustInt {
+		public int n;
+		public String toString() { return ""+n; }
+		public int hashCode() { return n; }
+		public boolean equals(Object o) {
+			return 
+				o instanceof JustInt 
+				&& ((JustInt)o).n == this.n;
+		}
+		
+	}
+:};
+//
+// Do NOT change the terminal alphabet for this studio
+//
+terminal         x, comma;
+terminal Integer d;        // Scanner continues to an Integer per digit
+
+/* Just like cup1a, except Digs is a JustInt object
+ * Without modifying JustInt, get this parser to act like cup1a, but by
+ *   passing JustInt objects up the parse tree.
+ */
+
+non terminal         Nums;
+non terminal	 JustInt Digs;
+
+Nums
+	::=	Nums comma Digs:num
+		{: 
+			Listing.get().EmitMessage("Another number is " + num); 
+		:}
+	|	Digs:num
+		{: 
+			Listing.get().EmitMessage("First number is " + num); 
+		:}
+	;
+	
+Digs
+	::=	Digs:num d:next
+		{:
+			RESULT = null;  // Making the implicit explicit
+		:}
+	|	d:leftmost
+		{:
+			RESULT = null;  // Java did this already
+		:}
+	;
+

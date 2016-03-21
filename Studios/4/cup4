@@ -1,0 +1,40 @@
+package autogen;
+import common.Listing;
+
+//
+// Do NOT change the terminal alphabet for this studio
+//
+terminal         x, comma;
+terminal Integer d;
+
+non terminal         Nums;
+non terminal	 Integer Num;
+
+//
+//  Language:  each number is either decimal, with nothing preceding it, or
+//     there is an x followed by a numeral that is interpreted as 1 less than the base
+//     for the numerals that follow.
+//     So, to specify a hex number, you would say
+//        x f 1af
+//     as "f" is 15 so the base is really 15+1 or 16
+//     Base 2 would be   x 1 110101111
+//     Spaces are ignored by the scanner, so they are insignificant here too
+//     See the testfiles
+
+Nums
+	::=	Nums comma Num:num
+		{: 
+			Listing.get().EmitMessage("Another number is " + num); 
+		:}
+	|	Num:num
+		{: 
+			Listing.get().EmitMessage("First number is " + num); 
+		:}
+	;
+	
+Num
+	::= d   // there is so much more to this story
+		{:
+			RESULT = new Integer(0);
+		:}
+	;
