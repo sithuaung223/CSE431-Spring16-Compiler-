@@ -3,9 +3,9 @@ import common.Listing;
 
 //
 // Group members:
-//   1)
-//   2)
-//   3)
+//   1) Evan 
+//   2) Si Thu
+//   3) Ethan
 //
 
 //
@@ -54,11 +54,15 @@ Nums
 Digs
 	::=	Digs:num d:next
 		{:
-			RESULT = null;  // Making the implicit explicit
+			JustInt node = new JustInt();
+			node.n = num.n * 10 + next;		
+			RESULT = node;  // Java did this already
 		:}
 	|	d:leftmost
 		{:
-			RESULT = null;  // Java did this already
+			JustInt node = new JustInt();
+			node.n = leftmost;		
+			RESULT = node;  // Java did this already
 		:}
 	;
 

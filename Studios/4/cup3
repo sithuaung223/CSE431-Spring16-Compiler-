@@ -9,6 +9,8 @@ terminal Integer d;
 
 non terminal         Nums;
 non terminal	 Integer Num;
+non terminal	Integer Digs;
+non terminal	Integer Hexdigs;
 
 //
 //  Language:  mixture of decimal and hexadecimal numerals
@@ -30,8 +32,31 @@ Nums
 	;
 	
 Num
-	::= d   // there is so much more to this story
-		{:
-			RESULT = new Integer(0);
-		:}
+	::= x Hexdigs:num
+	{: RESULT = num ; :}
+	| Digs:num
+	{: RESULT = num ; :}
 	;
+	
+Hexdigs
+	::=	Hexdigs:num d:next
+		{:
+			RESULT = new Integer(16*num.intValue() + next.intValue());
+		:}
+	|	d:leftmost
+		{:
+			RESULT = leftmost;
+		:}
+		;
+		
+	
+Digs
+	::=	Digs:num d:next
+		{:
+			RESULT = new Integer(10*num.intValue() + next.intValue());
+		:}
+	|	d:leftmost
+		{:
+			RESULT = leftmost;
+		:}
+		;

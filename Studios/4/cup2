@@ -28,11 +28,11 @@ Nums
 Digs
 	::=	Digs:num d:next
 		{:
-			RESULT = null;
+			RESULT = num + 1;
 		:}
 	|	d:leftmost
 		{:
-			RESULT = null;
+			RESULT = 1;
 		:}
 	;
 

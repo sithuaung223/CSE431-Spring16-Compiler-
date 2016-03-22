@@ -2,7 +2,9 @@ Team report of your experiences in this studio.
 
 Team member names:
 
-
+Evan
+Si Thu
+Ethan
 
 --------------------
 $Id: report.txt 3 2010-01-10 19:46:39Z cytron $      
