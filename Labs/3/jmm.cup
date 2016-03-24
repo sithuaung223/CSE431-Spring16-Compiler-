@@ -205,6 +205,7 @@ ClassDeclaration
         ::= Modifiers:mods CLASS:cl Identifier:id ClassBody:clb
         {:
         	classDlcNode classDlc= makeNode(mods, id);
+        	classDlc.adoptChildren(clb);
         	RESULT= classDlc;
         :}
 		;
@@ -224,8 +225,11 @@ Modifiers
 	|   STATIC
 	{:RESULT= "static ";:}
 	|   Modifiers:mds PUBLIC
+	{:RESULT= mds;:}
 	|   Modifiers:mds PRIVATE
+	{:RESULT= mds;:}
 	|   Modifiers:mds STATIC
+	{:RESULT= mds;:}
 	;
 
 
@@ -259,13 +263,24 @@ QualifiedName
  */
 ClassBody
 	::= LBRACE FieldDeclarations:fds RBRACE
+	{:
+		AbstractNode classBody= makeNode("Class Body");
+		classBody.adoptChildren(fds);
+		RESULT= classBody;
+    :}
 	|   LBRACE RBRACE
 	;
 
 FieldDeclarations
 	::= FieldDeclaration:fd
-        |   FieldDeclarations:fds FieldDeclaration:fd
-        ;
+	{:RESULT= makeNode("Fields"); :}
+    | FieldDeclarations:fds FieldDeclaration:fd
+    {:
+	    AbstractNode fields= makeNode("Fields");
+		fields.adoptChildren(fd);
+	    RESULT= fields; 
+    :}
+    ;
 
 FieldDeclaration
 	::= FieldVariableDeclaration:fvd SEMICOLON
