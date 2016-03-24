@@ -47,7 +47,21 @@ action code {:
      public String getName() { return s; }
    
    }
-
+   
+   class classDlcNode extends AbstractNode {
+   
+     private String mod,id;
+   
+     public classDlcNode(String m, String i) {
+       this.mod = m;
+       this.id = i;
+     }
+   
+     public String getName() { return "Class "+mod+ id; }
+   
+   }
+   
+   
    class IntegerNode extends AbstractNode {
       private Integer val;
       public IntegerNode(Integer val) { this.val = val; }
@@ -62,8 +76,7 @@ action code {:
    public AbstractNode makeNode(Symbol s) { return new TemporaryNode(symString.symToString[s.sym]); }
    public AbstractNode makeNode(String s) { return new TemporaryNode(s);   }
    public AbstractNode makeNode(Integer i) { return new IntegerNode(i);   }
-
-
+   public classDlcNode makeNode(String mod, String id) { return new classDlcNode(mod, id); }
 :};
 
 /*
@@ -133,7 +146,7 @@ non terminal   AbstractNode     AssignmentOperator;
 non terminal   AbstractNode     Expression;
 non terminal   AbstractNode     ReturnStatement;
 
-non terminal   AbstractNode     Identifier;
+non terminal   String           Identifier;
 non terminal   AbstractNode     Literal;
 non terminal   AbstractNode     Number;
 non terminal   AbstractNode     DeclaratorName; 
@@ -142,9 +155,9 @@ non terminal   AbstractNode     MethodDeclaratorName;
 non terminal   AbstractNode     LocalVariableDeclaratorName; 
 non terminal   AbstractNode     TypeDeclarations;
 non terminal   AbstractNode     TypeDeclaration;
-non terminal   AbstractNode     ClassDeclaration;
+non terminal   classDlcNode    	ClassDeclaration;
 non terminal   AbstractNode     ClassBody;
-non terminal   AbstractNode     Modifiers;
+non terminal   String           Modifiers;
 non terminal   AbstractNode     FieldDeclarations;
 non terminal   AbstractNode     FieldDeclaration;
 non terminal   AbstractNode     FieldVariableDeclarators;
@@ -184,13 +197,17 @@ TypeDeclarations
  */
 TypeDeclaration
         ::= ClassDeclaration:rhs
-		{: RESULT = makeNode("Class Declaration"); :}
+		{: RESULT = rhs; :}
         ;
 
 
 ClassDeclaration
         ::= Modifiers:mods CLASS:cl Identifier:id ClassBody:clb
-	;
+        {:
+        	classDlcNode classDlc= makeNode(mods, id);
+        	RESULT= classDlc;
+        :}
+		;
 
 /*
  * Process bottom-up to figure out whether the Modifiee
@@ -201,8 +218,11 @@ ClassDeclaration
  */
 Modifiers
 	::= PUBLIC
+	{:RESULT= "public ";:}
 	|   PRIVATE
+	{:RESULT= "private ";:}
 	|   STATIC
+	{:RESULT= "static ";:}
 	|   Modifiers:mds PUBLIC
 	|   Modifiers:mds PRIVATE
 	|   Modifiers:mds STATIC
@@ -600,6 +620,7 @@ LogicalUnaryOperator
 
 Identifier
 	::= IDENTIFIER:id
+	{:RESULT = "Instance "+ id;:}
 	;
 
 Literal
