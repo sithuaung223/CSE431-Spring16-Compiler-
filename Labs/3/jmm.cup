@@ -57,7 +57,33 @@ action code {:
        this.id = i;
      }
    
-     public String getName() { return "Class "+mod+ id; }
+     public String getName() { return "Class "+mod+" "+ id; }
+   
+   }
+   
+   class name extends AbstractNode {
+   
+     private String n;
+   
+     public name(String m) {
+       this.n = m;
+     }
+   
+     public String getName() { return n; }
+   
+   }
+   
+     class fieldNode extends AbstractNode {
+   
+     private String mod,type,list;
+   
+     public fieldNode(String m, String t, String l) {
+       this.mod = m;
+       this.type = t;
+       this.list = l;
+     }
+   
+     public String getName() { return mod+" "+type+" "+list; }
    
    }
    
@@ -74,9 +100,12 @@ action code {:
     */
 
    public AbstractNode makeNode(Symbol s) { return new TemporaryNode(symString.symToString[s.sym]); }
+   public name makeNode2(Symbol s) { return new name(symString.symToString[s.sym]); }
+   public name makeNode2(String s) { return new name(s); }
    public AbstractNode makeNode(String s) { return new TemporaryNode(s);   }
    public AbstractNode makeNode(Integer i) { return new IntegerNode(i);   }
    public classDlcNode makeNode(String mod, String id) { return new classDlcNode(mod, id); }
+   public fieldNode makeNode(String mod, String type, String list) { return new fieldNode(mod, type, list); }
 :};
 
 /*
@@ -116,7 +145,7 @@ terminal  Integer  INTNUMBER;
  */
 
 non terminal   AbstractNode     CompilationUnit;
-non terminal   AbstractNode     FieldVariableDeclaration;
+non terminal   name     		FieldVariableDeclaration;
 non terminal   AbstractNode     MethodDeclaration;
 non terminal   AbstractNode     MethodDeclarator;
 non terminal   AbstractNode     ParameterList,  Parameter;
@@ -150,7 +179,7 @@ non terminal   String           Identifier;
 non terminal   AbstractNode     Literal;
 non terminal   AbstractNode     Number;
 non terminal   AbstractNode     DeclaratorName; 
-non terminal   AbstractNode     FieldVariableDeclaratorName; 
+non terminal   String     		FieldVariableDeclaratorName; 
 non terminal   AbstractNode     MethodDeclaratorName; 
 non terminal   AbstractNode     LocalVariableDeclaratorName; 
 non terminal   AbstractNode     TypeDeclarations;
@@ -160,11 +189,11 @@ non terminal   AbstractNode     ClassBody;
 non terminal   String           Modifiers;
 non terminal   AbstractNode     FieldDeclarations;
 non terminal   AbstractNode     FieldDeclaration;
-non terminal   AbstractNode     FieldVariableDeclarators;
+non terminal   name 	     	FieldVariableDeclarators;
 non terminal   AbstractNode     LocalVariableDeclarators;
-non terminal   AbstractNode     QualifiedName; 
-non terminal   AbstractNode     TypeName, TypeSpecifier;
-non terminal   AbstractNode     PrimitiveType;
+non terminal   name     		QualifiedName; 
+non terminal   name	        	TypeName, TypeSpecifier;
+non terminal   name    			PrimitiveType;
 
 start with CompilationUnit;
 
@@ -219,27 +248,31 @@ ClassDeclaration
  */
 Modifiers
 	::= PUBLIC
-	{:RESULT= "public ";:}
+	{:RESULT= "public";:}
 	|   PRIVATE
-	{:RESULT= "private ";:}
+	{:RESULT= "private";:}
 	|   STATIC
-	{:RESULT= "static ";:}
+	{:RESULT= "static";:}
 	|   Modifiers:mds PUBLIC
-	{:RESULT= mds;:}
+	{:RESULT= mds+" Public";:}
 	|   Modifiers:mds PRIVATE
-	{:RESULT= mds;:}
+	{:RESULT= mds+ " Private";:}
 	|   Modifiers:mds STATIC
-	{:RESULT= mds;:}
+	{:RESULT= mds+" Static";:}
 	;
-
+	
+//make booleans?
 
 /*
  * Extra credit:  other types
  */
 PrimitiveType
         ::=	BOOLEAN:tok
+        {:RESULT= makeNode2(tok);:}
         | 	INT:tok
+        {:RESULT= makeNode2(tok);:}
         | 	VOID:tok
+        {:RESULT= makeNode2(tok);:}
         ;
 
 /*
@@ -248,7 +281,9 @@ PrimitiveType
  */
 QualifiedName
         ::= Identifier:id
+        {:RESULT= makeNode2(id);:}
         |   QualifiedName:qn PERIOD Identifier:id
+        {:RESULT= makeNode2(qn+"."+id);:}
         ;
 
 /*
@@ -273,21 +308,29 @@ ClassBody
 
 FieldDeclarations
 	::= FieldDeclaration:fd
-	{:RESULT= makeNode("Fields"); :}
-    | FieldDeclarations:fds FieldDeclaration:fd
-    {:
+	{:
 	    AbstractNode fields= makeNode("Fields");
 		fields.adoptChildren(fd);
 	    RESULT= fields; 
+    :}
+    | FieldDeclarations:fds FieldDeclaration:fd
+    {:
+	    fds.adoptChildren(fd);
+	    RESULT= fds; 
     :}
     ;
 
 FieldDeclaration
 	::= FieldVariableDeclaration:fvd SEMICOLON
+	{:RESULT= fvd;:}
 	|   MethodDeclaration:rhs
+	{:RESULT= rhs;:}
 	|   ConstructorDeclaration:rhs
+	{:RESULT= rhs;:}
 	|   StaticInitializer:rhs
-	|   ClassDeclaration                     /* Inner classes */
+	{:RESULT= rhs;:}
+	|   ClassDeclaration:cl            /* Inner classes */
+	{:RESULT= cl;:}
 	;
 
 /*
@@ -299,20 +342,39 @@ FieldDeclaration
  */
 FieldVariableDeclaration
 	::= Modifiers:m TypeSpecifier:t FieldVariableDeclarators:fvds
+	{:
+		fieldNode f = makeNode(m, t.getName(), fvds.getName());
+	    t.adoptChildren(f);
+		while(fvds.getSib() != null){
+	    fieldNode field = makeNode(m, t.getName(), fvds.getSib().getName());
+	    t.adoptChildren(field);
+	    fvds = (name)fvds.getSib();
+	    }
+	    RESULT= t; 
+    :}
 	;
 
 TypeSpecifier
         ::= TypeName:rhs
+        {:RESULT= rhs;:}
         ;
 
 TypeName
 	::= PrimitiveType:rhs
+	{:RESULT= rhs;:}
 	|   QualifiedName:rhs
+	{:RESULT= rhs;:}
 	;
 
 FieldVariableDeclarators
 	::=  FieldVariableDeclaratorName:v
+	{:RESULT= makeNode2(v);:}
 	|    FieldVariableDeclarators:fds COMMA FieldVariableDeclaratorName:v
+	{:
+	name n = makeNode2(v);
+	fds.makeSibling(n);
+	RESULT= (name) fds;
+	:}
 	;
 
 /*
@@ -346,6 +408,7 @@ MethodDeclaratorName
 
 FieldVariableDeclaratorName
 	::= Identifier:in
+	{:RESULT= in;:}
         ;
 
 LocalVariableDeclaratorName
@@ -635,7 +698,7 @@ LogicalUnaryOperator
 
 Identifier
 	::= IDENTIFIER:id
-	{:RESULT = "Instance "+ id;:}
+	{:RESULT = id;:}
 	;
 
 Literal
@@ -646,4 +709,3 @@ Number
 	::= INTNUMBER:n
 		{: RESULT = makeNode(n); :}
 	;
-
