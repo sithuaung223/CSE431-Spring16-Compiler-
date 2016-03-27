@@ -100,8 +100,8 @@ action code {:
     */
 
    public AbstractNode makeNode(Symbol s) { return new TemporaryNode(symString.symToString[s.sym]); }
-   public name makeNode2(Symbol s) { return new name(symString.symToString[s.sym]); }
-   public name makeNode2(String s) { return new name(s); }
+   public name makeNodeSymbol(Symbol s) { return new name(symString.symToString[s.sym]); }
+   public name makeNodeString(String s) { return new name(s); }
    public AbstractNode makeNode(String s) { return new TemporaryNode(s);   }
    public AbstractNode makeNode(Integer i) { return new IntegerNode(i);   }
    public classDlcNode makeNode(String mod, String id) { return new classDlcNode(mod, id); }
@@ -268,11 +268,11 @@ Modifiers
  */
 PrimitiveType
         ::=	BOOLEAN:tok
-        {:RESULT= makeNode2(tok);:}
+        {:RESULT= makeNodeSymbol(tok);:}
         | 	INT:tok
-        {:RESULT= makeNode2(tok);:}
+        {:RESULT= makeNodeSymbol(tok);:}
         | 	VOID:tok
-        {:RESULT= makeNode2(tok);:}
+        {:RESULT= makeNodeSymbol(tok);:}
         ;
 
 /*
@@ -281,9 +281,9 @@ PrimitiveType
  */
 QualifiedName
         ::= Identifier:id
-        {:RESULT= makeNode2(id);:}
+        {:RESULT= makeNodeString(id);:}
         |   QualifiedName:qn PERIOD Identifier:id
-        {:RESULT= makeNode2(qn+"."+id);:}
+        {:RESULT= makeNodeString(qn+"."+id);:}
         ;
 
 /*
@@ -368,10 +368,10 @@ TypeName
 
 FieldVariableDeclarators
 	::=  FieldVariableDeclaratorName:v
-	{:RESULT= makeNode2(v);:}
+	{:RESULT= makeNodeString(v);:}
 	|    FieldVariableDeclarators:fds COMMA FieldVariableDeclaratorName:v
 	{:
-	name n = makeNode2(v);
+	name n = makeNodeString(v);
 	fds.makeSibling(n);
 	RESULT= (name) fds;
 	:}
