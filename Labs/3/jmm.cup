@@ -345,8 +345,12 @@ FieldDeclarations
     :}
     | FieldDeclarations:fds FieldDeclaration:fd
     {:
-	    fds.adoptChildren(fd);
+    	if(fd != null){
+	    fds.makeSibling(fd);
 	    RESULT= fds; 
+	    }else{
+	    RESULT= fds; 
+	    }
     :}
     ;
 
@@ -512,6 +516,13 @@ ConstructorDeclaration
 
 StaticInitializer
 	::= STATIC Block:rhs
+	/*
+	{:
+	name t = makeNodeString("Static");
+	t.adoptChildren(rhs);
+	RESULT= t;
+	:}
+	*/
 	;
 
 /*
@@ -521,7 +532,8 @@ StaticInitializer
 Block
 	::= LBRACE LocalVariableDeclarationsAndStatements:stmts RBRACE
 	{:
-	name t = makeNodeString("test block");
+	name t = makeNodeString("BLOCK");
+	t.adoptChildren(stmts);
 	RESULT= t;
 	:}
 	|   LBRACE RBRACE
