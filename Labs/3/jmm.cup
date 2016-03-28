@@ -176,7 +176,7 @@ terminal  Integer  INTNUMBER;
 
 non terminal   AbstractNode     CompilationUnit;
 non terminal   name     		FieldVariableDeclaration;
-non terminal   name			    MethodDeclaration;
+non terminal   methodNode		MethodDeclaration;
 non terminal   paramNode		MethodDeclarator;
 non terminal   name		     	ParameterList,  Parameter;
 non terminal   AbstractNode     MethodBody, ConstructorDeclaration;
@@ -218,7 +218,7 @@ non terminal   classDlcNode    	ClassDeclaration;
 non terminal   AbstractNode     ClassBody;
 non terminal   String           Modifiers;
 non terminal   AbstractNode     FieldDeclarations;
-non terminal   AbstractNode     FieldDeclaration;
+non terminal   name     		FieldDeclaration;
 non terminal   name 	     	FieldVariableDeclarators;
 non terminal   AbstractNode     LocalVariableDeclarators;
 non terminal   name     		QualifiedName; 
@@ -339,9 +339,9 @@ ClassBody
 FieldDeclarations
 	::= FieldDeclaration:fd
 	{:
-	    AbstractNode fields= makeNode("Fields");
-		fields.adoptChildren(fd);
-	    RESULT= fields; 
+		//name f = makeNodeString("Fields");
+		//f.adoptChildren(fd);
+	    RESULT= fd; 
     :}
     | FieldDeclarations:fds FieldDeclaration:fd
     {:
@@ -356,15 +356,35 @@ FieldDeclarations
 
 FieldDeclaration
 	::= FieldVariableDeclaration:fvd SEMICOLON
-	{:RESULT= fvd;:}
+	{:
+	name f = makeNodeString("Fields");
+	f.adoptChildren(fvd);
+	RESULT= f;
+	:}
 	|   MethodDeclaration:rhs
-	{:RESULT= rhs;:}
+	{:
+	name m = makeNodeString("Methods");
+	m.adoptChildren(rhs);
+	RESULT= m;
+	:}
 	|   ConstructorDeclaration:rhs
-	{:RESULT= rhs;:}
+	{:
+	name c = makeNodeString("Constructor");
+	c.adoptChildren(rhs);
+	RESULT= c;
+	:}
 	|   StaticInitializer:rhs
-	{:RESULT= rhs;:}
+	{:
+	name s = makeNodeString("Static");
+	s.adoptChildren(rhs);
+	RESULT= s;
+	:}
 	|   ClassDeclaration:cl            /* Inner classes */
-	{:RESULT= cl;:}
+	{:
+	name c = makeNodeString("Inner Class");
+	c.adoptChildren(cl);
+	RESULT= c;
+	:}
 	;
 
 /*
@@ -417,16 +437,14 @@ FieldVariableDeclarators
 MethodDeclaration
 	::= Modifiers:m TypeSpecifier:t MethodDeclarator:md     MethodBody:rhs
 	{:
-		name methods= makeNodeString("Methods");
 		methodNode mn = makeNodeMethod(m, t.getName(), md.getName());
-		methods.adoptChildren(t);
 		t.adoptChildren(mn);
 		name body = makeNodeString("PARAMS");
 		name pm = makeNodeString(md.getParam());
 		body.adoptChildren(pm);
 		mn.adoptChildren(body);
 		body.makeSibling(rhs);
-		RESULT= methods;
+		RESULT= mn;
     :}
 	;
 
@@ -434,9 +452,13 @@ MethodDeclarator
 	::= MethodDeclaratorName:dn LPAREN ParameterList:pl RPAREN
 	{:
 		paramNode p = makeNodeParam(dn.getName(), pl.getName());
-		p.adoptChildren(pl);
-		RESULT= p;
-    :}
+		while(pl.getSib() != null){
+	    name z = makeNodeString(pl.getSib().getName());
+	    p.makeSibling(z);
+	    pl = (name)pl.getSib();
+	    }
+	    RESULT= p; 
+    :}	
 	|   MethodDeclaratorName:dn LPAREN RPAREN
 	{:
 		paramNode p = makeNodeParam(dn.getName(), "empty field");
@@ -451,8 +473,9 @@ ParameterList
     :}
 	|   ParameterList:spine COMMA Parameter:rhs
 	{:
-		spine.makeSibling(rhs);
-		RESULT= spine;
+	name n = makeNodeString(rhs.getName());
+	spine.makeSibling(n);
+	RESULT =  spine;
     :}
 	;
 
@@ -503,26 +526,22 @@ MethodBody
 
 ConstructorDeclaration
 	::= Modifiers:m MethodDeclarator:md        Block:rhs
-	/*
 	{:
-	name c = makeNodeString("Constructor");
 	name n = makeNodeString(m+" "+md.getName());
-	c.adoptChildren(n);
-	n.adoptChildren(rhs);
-	RESULT= c;
+	name body = makeNodeString("PARAMS");
+	name pm = makeNodeString(md.getParam());
+	body.adoptChildren(pm);
+	n.adoptChildren(body);
+	body.makeSibling(rhs);
+	RESULT= n;
 	:}
-	*/
 	;
 
 StaticInitializer
 	::= STATIC Block:rhs
-	/*
 	{:
-	name t = makeNodeString("Static");
-	t.adoptChildren(rhs);
-	RESULT= t;
+	RESULT= rhs;
 	:}
-	*/
 	;
 
 /*
