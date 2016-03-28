@@ -152,7 +152,7 @@ action code {:
    public fieldNode makeNode(String mod, String type, String list) { return new fieldNode(mod, type, list); }
    public methodNode makeNodeMethod(String mod, String type, String list) { return new methodNode(mod, type, list); }
    public paramNode makeNodeParam(String type, name n) { return new paramNode(type, n); }
-   public spcl makeNodepcl(String name, AbstractNode node) { return new spcl(name, node); }
+   public spcl makeNodeSpcl(String name, AbstractNode node) { return new spcl(name, node); }
 :};
 
 /*
@@ -347,6 +347,18 @@ ClassBody
 	::= LBRACE FieldDeclarations:fds RBRACE
 	{:
 		AbstractNode classBody= makeNode("Class Body");
+		/*
+		name fields = makeNodeString("Fields");
+		name methods = makeNodeString("Methods");
+		name constructor = makeNodeString("Constructor");
+		name sta = makeNodeString("Static");
+		name cl = makeNodeString("Inner Classes");
+		fds.adoptChildren(fields);
+		fds.adoptChildren(methods);
+		fds.adoptChildren(constructor);
+		fds.adoptChildren(sta);
+		fds.adoptChildren(cl);		
+		*/
 		classBody.adoptChildren(fds);
 		RESULT= classBody;
     :}
@@ -356,8 +368,7 @@ ClassBody
 FieldDeclarations
 	::= FieldDeclaration:fd
 	{:
-		//name f = makeNodeString("Fields");
-		//f.adoptChildren(fd);
+
 	    RESULT= fd; 
     :}
     | FieldDeclarations:fds FieldDeclaration:fd
@@ -371,15 +382,30 @@ FieldDeclarations
 
 FieldDeclaration
 	::= FieldVariableDeclaration:fvd SEMICOLON
-	{:	RESULT= fvd;:}
+	{:
+	//spcl field = makeNodeSpcl("Fields", fvd);	
+	RESULT= fvd;
+	:}
 	|   MethodDeclaration:rhs
-	{:RESULT= rhs;:}
+	{:
+	//spcl method = makeNodeSpcl("Methods", rhs);	
+	RESULT= rhs;
+	:}
 	|   ConstructorDeclaration:rhs
-	{:RESULT= rhs;:}
+	{:
+	//spcl constructors = makeNodeSpcl("Constructors", rhs);	
+	RESULT= rhs;
+	:}
 	|   StaticInitializer:rhs
-	{:RESULT= rhs;:}
+	{:
+	//spcl sta = makeNodeSpcl("Static", rhs);	
+	RESULT= rhs;
+	:}
 	|   ClassDeclaration:cl            /* Inner classes */
-	{:RESULT= cl;:}
+	{:
+	//spcl cla = makeNodeSpcl("InnerClass", cl);	
+	RESULT= cl;
+	:}
 	;
 
 /*
