@@ -118,15 +118,15 @@ action code {:
    
    class spcl extends AbstractNode {
    
-     private String name;
+     private Integer name;
      private AbstractNode node;
    
-     public spcl(String m, AbstractNode n) {
+     public spcl(Integer m, AbstractNode n) {
        this.name = m;
        this.node = n;
      }
    
-     public String getName() { return name; }
+     public Integer getName2() { return name; }
      public AbstractNode getN() { return node; }
    
    }
@@ -152,7 +152,7 @@ action code {:
    public fieldNode makeNode(String mod, String type, String list) { return new fieldNode(mod, type, list); }
    public methodNode makeNodeMethod(String mod, String type, String list) { return new methodNode(mod, type, list); }
    public paramNode makeNodeParam(String type, name n) { return new paramNode(type, n); }
-   public spcl makeNodeSpcl(String name, AbstractNode node) { return new spcl(name, node); }
+   public spcl makeNodeSpcl(Integer name, AbstractNode node) { return new spcl(name, node); }
 :};
 
 /*
@@ -234,8 +234,8 @@ non terminal   AbstractNode     TypeDeclaration;
 non terminal   classDlcNode    	ClassDeclaration;
 non terminal   AbstractNode     ClassBody;
 non terminal   String           Modifiers;
-non terminal   AbstractNode     FieldDeclarations;
-non terminal   AbstractNode     FieldDeclaration;
+non terminal   spcl     FieldDeclarations;
+non terminal   spcl     FieldDeclaration;
 non terminal   name 	     	FieldVariableDeclarators;
 non terminal   AbstractNode     LocalVariableDeclarators;
 non terminal   name     		QualifiedName; 
@@ -347,19 +347,17 @@ ClassBody
 	::= LBRACE FieldDeclarations:fds RBRACE
 	{:
 		AbstractNode classBody= makeNode("Class Body");
-		/*
 		name fields = makeNodeString("Fields");
 		name methods = makeNodeString("Methods");
 		name constructor = makeNodeString("Constructor");
 		name sta = makeNodeString("Static");
 		name cl = makeNodeString("Inner Classes");
-		fds.adoptChildren(fields);
-		fds.adoptChildren(methods);
-		fds.adoptChildren(constructor);
-		fds.adoptChildren(sta);
-		fds.adoptChildren(cl);		
-		*/
-		classBody.adoptChildren(fds);
+		classBody.adoptChildren(fields);
+		
+		if(fds.getName2() == 0){
+ 		fields.adoptChildren(fds.getN());
+    	}
+		
 		RESULT= classBody;
     :}
 	|   LBRACE RBRACE
@@ -373,9 +371,7 @@ FieldDeclarations
     :}
     | FieldDeclarations:fds FieldDeclaration:fd
     {:
-    	if(fd != null){
-	    fds.makeSibling(fd);
-	    }
+    	fds.makeSibling(fd);
 	    RESULT= fds; 
     :}
     ;
@@ -383,28 +379,28 @@ FieldDeclarations
 FieldDeclaration
 	::= FieldVariableDeclaration:fvd SEMICOLON
 	{:
-	//spcl field = makeNodeSpcl("Fields", fvd);	
-	RESULT= fvd;
+	spcl field = makeNodeSpcl(0, fvd);	
+	RESULT= field;
 	:}
 	|   MethodDeclaration:rhs
 	{:
-	//spcl method = makeNodeSpcl("Methods", rhs);	
-	RESULT= rhs;
+	spcl method = makeNodeSpcl(1, rhs);	
+	RESULT= method;
 	:}
 	|   ConstructorDeclaration:rhs
 	{:
-	//spcl constructors = makeNodeSpcl("Constructors", rhs);	
-	RESULT= rhs;
+	spcl constructors = makeNodeSpcl(2, rhs);	
+	RESULT= constructors;
 	:}
 	|   StaticInitializer:rhs
 	{:
-	//spcl sta = makeNodeSpcl("Static", rhs);	
-	RESULT= rhs;
+	spcl sta = makeNodeSpcl(3, rhs);	
+	RESULT= sta;
 	:}
 	|   ClassDeclaration:cl            /* Inner classes */
 	{:
-	//spcl cla = makeNodeSpcl("InnerClass", cl);	
-	RESULT= cl;
+	spcl cla = makeNodeSpcl(4, cl);	
+	RESULT= cla;
 	:}
 	;
 
