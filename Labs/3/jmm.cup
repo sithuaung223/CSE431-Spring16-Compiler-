@@ -347,29 +347,34 @@ ClassBody
 	::= LBRACE FieldDeclarations:fds RBRACE
 	{:
 		AbstractNode classBody= makeNode("Class Body");
+		
 		name fields = makeNodeString("Fields");
 		name methods = makeNodeString("Methods");
 		name constructor = makeNodeString("Constructor");
 		name sta = makeNodeString("Static");
 		name cl = makeNodeString("Inner Classes");
+		
 		classBody.adoptChildren(fields);
-		classBody.adoptChildren(methods);
 		classBody.adoptChildren(constructor);
+		classBody.adoptChildren(methods);
 		classBody.adoptChildren(sta);
 		classBody.adoptChildren(cl);
 		
-		while(fds.getSib() != null){
-		if(fds.getName2() == 0){
- 		fields.adoptChildren(fds.getN());
-    	}else if(fds.getName2() == 1){
-    	methods.adoptChildren(fds.getN());
-    	}else if(fds.getName2() == 2){
-    	constructor.adoptChildren(fds.getN());
-    	}else if(fds.getName2() == 3){
-    	sta.adoptChildren(fds.getN());
-    	}else if(fds.getName2() == 4){
-    	cl.adoptChildren(fds.getN());
-    	}
+		
+		while(fds != null){
+		
+			if(fds.getName2() == 0){
+			fields.adoptChildren(fds.getN());
+			}else if(fds.getName2() == 1){
+			methods.adoptChildren(fds.getN());
+			}else if(fds.getName2() == 2){
+			constructor.adoptChildren(fds.getN());
+			}else if(fds.getName2() == 3){
+			sta.adoptChildren(fds.getN());
+			}else if(fds.getName2() == 4){
+			cl.adoptChildren(fds.getN());
+			}
+    	
     	fds = (spcl) fds.getSib(); 
     	}
 		
@@ -387,7 +392,7 @@ FieldDeclarations
     | FieldDeclarations:fds FieldDeclaration:fd
     {:
     	fds.makeSibling(fd);
-	    RESULT= fds; 
+	    RESULT= (spcl) fds; 
     :}
     ;
 
@@ -559,7 +564,9 @@ ConstructorDeclaration
 StaticInitializer
 	::= STATIC Block:rhs
 	{:
+	/*
 	RESULT= rhs;
+	*/
 	:}
 	;
 
