@@ -216,10 +216,10 @@ non terminal   AbstractNode     CastExpression, MultiplicativeExpression;
 non terminal   AbstractNode     AdditiveExpression, ShiftExpression, RelationalExpression;
 non terminal   AbstractNode     EqualityExpression, AndExpression, ExclusiveOrExpression;
 non terminal   AbstractNode     InclusiveOrExpression, ConditionalAndExpression;
-non terminal   AbstractNode     ConditionalOrExpression;
-non terminal   AbstractNode     ConditionalExpression, AssignmentExpression;
-non terminal   AbstractNode     AssignmentOperator;
-non terminal   AbstractNode     Expression;
+non terminal   name			    ConditionalOrExpression;
+non terminal   name     		ConditionalExpression, AssignmentExpression;
+non terminal   name			    AssignmentOperator;
+non terminal   name     		Expression;
 non terminal   AbstractNode     ReturnStatement;
 
 non terminal   String           Identifier;
@@ -674,7 +674,8 @@ IterationStatement
 	;
 
 ReturnStatement
-	::= RETURN Expression SEMICOLON
+	::= RETURN Expression:e SEMICOLON
+	{:RESULT=e;:}
 	|   RETURN            SEMICOLON
 	;
 
@@ -753,6 +754,7 @@ PostfixExpression
 
 Expression
 	::= AssignmentExpression:rhs
+	{:RESULT=rhs;:}
         ;
 
 /*
@@ -771,22 +773,38 @@ Expression
 
 AssignmentExpression
 	::= ConditionalExpression:rhs
+	{:RESULT=makeNodeString("Local Ref " + rhs);:}
 	|   UnaryExpression:lhs AssignmentOperator:op AssignmentExpression:rhs
+	{:
+	name a = makeNodeString("Assign");
+	if(lhs != null){
+	rhs.makeSibling(lhs);
+	}
+	a.adoptChildren(rhs);
+	RESULT=a;
+	:}
 	;
 
 AssignmentOperator
 	::= EQUALS:tok
+	{:RESULT=makeNodeSymbol(tok);:}
 	|   ASS_ADD:tok   /* There are more of these if you're interested */
+	{:RESULT=makeNodeSymbol(tok);:}
 	;
 
 ConditionalExpression
-	::= ConditionalOrExpression
-	|   ConditionalOrExpression QUESTION Expression COLON ConditionalExpression
+	::= ConditionalOrExpression:ce
+		{:RESULT=makeNodeString(ce.getName());:}
+	|   ConditionalOrExpression:ce QUESTION Expression:e COLON ConditionalExpression:c
+		{:RESULT=makeNodeString(e.getName());:}
+	
 	;
 
 ConditionalOrExpression
 	::= ConditionalAndExpression
+		{:RESULT=makeNodeString("test");:}
 	|   ConditionalOrExpression:left OP_LOR:op ConditionalAndExpression:right   /* short-circuit OR */
+	{:RESULT=makeNodeString("test2");:}
 	;
 
 ConditionalAndExpression
