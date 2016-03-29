@@ -353,9 +353,24 @@ ClassBody
 		name sta = makeNodeString("Static");
 		name cl = makeNodeString("Inner Classes");
 		classBody.adoptChildren(fields);
+		classBody.adoptChildren(methods);
+		classBody.adoptChildren(constructor);
+		classBody.adoptChildren(sta);
+		classBody.adoptChildren(cl);
 		
+		while(fds.getSib() != null){
 		if(fds.getName2() == 0){
  		fields.adoptChildren(fds.getN());
+    	}else if(fds.getName2() == 1){
+    	methods.adoptChildren(fds.getN());
+    	}else if(fds.getName2() == 2){
+    	constructor.adoptChildren(fds.getN());
+    	}else if(fds.getName2() == 3){
+    	sta.adoptChildren(fds.getN());
+    	}else if(fds.getName2() == 4){
+    	cl.adoptChildren(fds.getN());
+    	}
+    	fds = (spcl) fds.getSib(); 
     	}
 		
 		RESULT= classBody;
@@ -526,7 +541,7 @@ MethodBody
 ConstructorDeclaration
 	::= Modifiers:m MethodDeclarator:md        Block:rhs
 	{:
-	name t = makeNodeString("");
+	name t = makeNodeString(md.getName());
 	name n = makeNodeString(m+" "+md.getName());
 	name body = makeNodeString("PARAMS");
 	
@@ -543,13 +558,9 @@ ConstructorDeclaration
 
 StaticInitializer
 	::= STATIC Block:rhs
-	/*
 	{:
-	name t = makeNodeString("Static");
-	t.adoptChildren(rhs);
-	RESULT= t;
+	RESULT= rhs;
 	:}
-	*/
 	;
 
 /*
