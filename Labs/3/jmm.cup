@@ -201,7 +201,7 @@ non terminal   AbstractNode     StaticInitializer;
 non terminal   name			    Block;
 non terminal   AbstractNode     LocalVariableDeclarationsAndStatements;
 non terminal   AbstractNode     LocalVariableDeclarationOrStatement;
-non terminal   AbstractNode     LocalVariableDeclarationStatement ;
+non terminal   name			    LocalVariableDeclarationStatement ;
 non terminal   AbstractNode     Statement, EmptyStatement;
 non terminal   AbstractNode     ExpressionStatement, SelectionStatement;
 non terminal   AbstractNode     IterationStatement;
@@ -234,8 +234,8 @@ non terminal   AbstractNode     TypeDeclaration;
 non terminal   classDlcNode    	ClassDeclaration;
 non terminal   AbstractNode     ClassBody;
 non terminal   String           Modifiers;
-non terminal   spcl     FieldDeclarations;
-non terminal   spcl     FieldDeclaration;
+non terminal   spcl     		FieldDeclarations;
+non terminal   spcl     		FieldDeclaration;
 non terminal   name 	     	FieldVariableDeclarators;
 non terminal   AbstractNode     LocalVariableDeclarators;
 non terminal   name     		QualifiedName; 
@@ -515,7 +515,7 @@ ParameterList
 
 Parameter
 	::= TypeSpecifier:t DeclaratorName:dn
-	{:RESULT= makeNodeString(t.getName()+ " " + dn.getName()); :}
+	{:RESULT= makeNodeString("Param" + " " + t.getName()+ " " + dn.getName()); :}
 	;
 
 DeclaratorName
@@ -564,9 +564,7 @@ ConstructorDeclaration
 StaticInitializer
 	::= STATIC Block:rhs
 	{:
-	/*
 	RESULT= rhs;
-	*/
 	:}
 	;
 
@@ -586,23 +584,48 @@ Block
 
 LocalVariableDeclarationsAndStatements
 	::= LocalVariableDeclarationOrStatement:rhs
+	{:RESULT=rhs;:}
 	|   LocalVariableDeclarationsAndStatements:lvds 
 	    LocalVariableDeclarationOrStatement:rhs
+	    {:
+	    if(rhs != null){
+	    lvds.makeSibling(rhs);
+	    }
+	    RESULT=lvds;
+	    :}
 	;
 
 LocalVariableDeclarationOrStatement
 	::= LocalVariableDeclarationStatement:rhs
+	{:RESULT=rhs;:}
 	|   Statement:rhs
+	{:RESULT=rhs;:}
 	;
 
 LocalVariableDeclarationStatement
 	::= TypeSpecifier:t LocalVariableDeclarators:rhs SEMICOLON
-	|   ClassDeclaration                     /* Inner classes */
+	{:
+	t.adoptChildren(makeNodeString("Local" + " " + t + " " + rhs));
+	
+	while(rhs.getSib() != null){
+		t.adoptChildren(makeNodeString("Local" + " " + t + " " + rhs.getSib()));
+		rhs = rhs.getSib();
+	}
+	
+	RESULT=t;
+	:}
+	
+	|   ClassDeclaration                  /* Inner classes */
 	;
 
 LocalVariableDeclarators
 	::= LocalVariableDeclaratorName:v
+	{:RESULT=v;:}
 	|   LocalVariableDeclarators:fds COMMA LocalVariableDeclaratorName:v
+	{:
+	fds.makeSibling(v);
+	RESULT=fds;
+	:}
 	;
 
 Statement
