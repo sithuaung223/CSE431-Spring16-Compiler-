@@ -315,7 +315,7 @@ Modifiers
  */
 PrimitiveType
         ::=	BOOLEAN:tok
-        {:RESULT= makeNodeString("B");:}
+        {:RESULT= makeNodeString("Z");:}
         | 	INT:tok
         {:RESULT= makeNodeString("I");:}
         | 	VOID:tok
@@ -635,6 +635,7 @@ Statement
         |   IterationStatement
 	|   ReturnStatement
 	|   Block:rhs
+	{:RESULT=rhs;:}
 	;
 
 EmptyStatement
@@ -643,6 +644,7 @@ EmptyStatement
 
 ExpressionStatement
 	::= Expression:rhs
+	{:RESULT=rhs;:}
 	;
 
 /*
