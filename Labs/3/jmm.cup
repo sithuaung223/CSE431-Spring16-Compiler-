@@ -242,6 +242,10 @@ non terminal   name     		QualifiedName;
 non terminal   name	        	TypeName, TypeSpecifier;
 non terminal   name    			PrimitiveType;
 
+//fix precedence???
+precedence left LPAREN, RPAREN;
+precedence left ELSE;
+
 start with CompilationUnit;
 
 
@@ -631,9 +635,13 @@ LocalVariableDeclarators
 Statement
 	::= EmptyStatement
 	|   ExpressionStatement:rhs SEMICOLON
-        |   SelectionStatement
-        |   IterationStatement
-	|   ReturnStatement
+	{:RESULT=rhs;:}
+        |   SelectionStatement:ss
+        {:RESULT=ss;:}
+        |   IterationStatement:is
+        {:RESULT=is;:}
+	|   ReturnStatement:rs
+	{:RESULT=rs;:}
 	|   Block:rhs
 	{:RESULT=rhs;:}
 	;
@@ -655,8 +663,7 @@ ExpressionStatement
 
 SelectionStatement
 	::= IF LPAREN Expression RPAREN Statement ELSE Statement
-/*	|   IF LPAREN Expression RPAREN Statement
- */
+	|   IF LPAREN Expression RPAREN Statement
 	;
 
 /* 
