@@ -216,7 +216,7 @@ non terminal   AbstractNode     CastExpression, MultiplicativeExpression;
 non terminal   AbstractNode     AdditiveExpression, ShiftExpression, RelationalExpression;
 non terminal   AbstractNode     EqualityExpression, AndExpression, ExclusiveOrExpression;
 non terminal   AbstractNode     InclusiveOrExpression, ConditionalAndExpression;
-non terminal   name			    ConditionalOrExpression;
+non terminal   AbstractNode		ConditionalOrExpression;
 non terminal   name     		ConditionalExpression, AssignmentExpression;
 non terminal   name			    AssignmentOperator;
 non terminal   name     		Expression;
@@ -619,7 +619,7 @@ LocalVariableDeclarationStatement
 	RESULT=t;
 	:}
 	
-	|   ClassDeclaration                  /* Inner classes */
+	|   ClassDeclaration                  /* Inner classes */ //fix this!!
 	;
 
 LocalVariableDeclarators
@@ -662,26 +662,51 @@ ExpressionStatement
  */
 
 SelectionStatement
-	::= IF LPAREN Expression RPAREN Statement ELSE Statement
-	|   IF LPAREN Expression RPAREN Statement
+	::= IF LPAREN Expression:exp RPAREN Statement:stmt1 ELSE Statement:stmt2
+	{:
+		name a= makeNodeString("IF");
+		a.adoptChildren(exp);
+		a.adoptChildren(stmt1);
+		a.adoptChildren(stmt2);
+		RESULT= a;
+	:}
+	|   IF LPAREN Expression:exp RPAREN Statement:stmt
+	{:
+		name a= makeNodeString("IF");
+		a.adoptChildren(exp);
+		a.adoptChildren(stmt);
+		RESULT= a;
+	:}
 	;
 
 /* 
  * Extra Credit:  FOR statement, DO statement
  */
 IterationStatement
-	::= WHILE LPAREN Expression RPAREN Statement
+	::= WHILE LPAREN Expression:exp RPAREN Statement:stmt
+	{:
+		name a= makeNodeString("WHILE");
+		a.adoptChildren(exp);
+		a.adoptChildren(stmt);
+		RESULT= a;
+	:}
 	;
 
 ReturnStatement
 	::= RETURN Expression:e SEMICOLON
-	{:RESULT=e;:}
+	{:
+	name r = makeNodeString("Return");
+	r.adoptChildren(e);
+	RESULT=r;
+	:}
 	|   RETURN            SEMICOLON
 	;
 
 PrimaryExpression
 	::= QualifiedName:t
+	{:RESULT= t;:}
 	|   NotJustName:rhs
+	{:RESULT= rhs;:}
 /*
  *  You will eventually have to explain the conflicts that arise when the rule below
  *       is uncommented.
@@ -693,21 +718,29 @@ PrimaryExpression
 	;
 
 NotJustName
-	::= SpecialName
+	::= SpecialName:spn
+	{:RESULT=spn;:}
 	|   AllocationExpression
 	|   ComplexPrimary:rhs
+	{:RESULT= rhs;:}
 	;
 
 ComplexPrimary
 	::= LPAREN Expression:rhs RPAREN
+	{:RESULT= rhs;:}
 	|   ComplexPrimaryNoParenthesis:rhs
+	{:RESULT= rhs;:}
 	;
 
 ComplexPrimaryNoParenthesis
 	::= Literal:rhs
+	{:RESULT= rhs;:}
 	|   Number:rhs
-	|   FieldAccess
-	|   MethodCall
+	{:RESULT= rhs;:}
+	|   FieldAccess:rhs
+	{:RESULT= rhs;:}
+	|   MethodCall:rhs
+	{:RESULT= rhs;:}
 	;
 
 FieldAccess
@@ -728,8 +761,11 @@ MethodReference
 
 SpecialName
 	::= THIS
+	{:RESULT= makeNodeString("THIS");:}
 	|   NULL
+	{:RESULT= makeNodeString("NULL");:}
 	|   SUPER
+	{:RESULT= makeNodeString("SUPER");:}
 	;
 
 ArgumentList
@@ -750,6 +786,7 @@ AllocationExpression
  */
 PostfixExpression
 	::= PrimaryExpression:rhs
+	{:RESULT= rhs;:}
         ;
 
 Expression
@@ -773,14 +810,13 @@ Expression
 
 AssignmentExpression
 	::= ConditionalExpression:rhs
+	//fix this!!!!!!!
 	{:RESULT=makeNodeString("Local Ref " + rhs);:}
 	|   UnaryExpression:lhs AssignmentOperator:op AssignmentExpression:rhs
 	{:
 	name a = makeNodeString("Assign");
-	if(lhs != null){
-	rhs.makeSibling(lhs);
-	}
-	a.adoptChildren(rhs);
+
+	a.adoptChildren((makeNodeString("Local Ref "+lhs)).makeSibling(rhs));
 	RESULT=a;
 	:}
 	;
@@ -801,40 +837,45 @@ ConditionalExpression
 	;
 
 ConditionalOrExpression
-	::= ConditionalAndExpression
-		{:RESULT=makeNodeString("test");:}
+	::= ConditionalAndExpression:cne
+	{:RESULT=cne;:}
 	|   ConditionalOrExpression:left OP_LOR:op ConditionalAndExpression:right   /* short-circuit OR */
-	{:RESULT=makeNodeString("test2");:}
 	;
 
 ConditionalAndExpression
 	::= InclusiveOrExpression:rhs
+	{:RESULT= rhs;:}
 	|   ConditionalAndExpression:left OP_LAND:op InclusiveOrExpression:right   /* short-circuit AND */
 	;
 
 InclusiveOrExpression
 	::= ExclusiveOrExpression:rhs
+	{:RESULT= rhs;:}
 	|   InclusiveOrExpression:left PIPE:op ExclusiveOrExpression:right
 	;
 
 ExclusiveOrExpression
 	::= AndExpression:rhs
+	{:RESULT= rhs;:}
 	|   ExclusiveOrExpression:left HAT:op AndExpression:right
 	;
 
 AndExpression
 	::= EqualityExpression:rhs
+	{:RESULT= rhs;:}
         |   AndExpression:left AND:op EqualityExpression:right
         ;
 
 EqualityExpression
 	::= RelationalExpression:rhs
+	{:RESULT= rhs;:}
         |   EqualityExpression:left OP_EQ:op RelationalExpression:right
         |   EqualityExpression:left OP_NE:op RelationalExpression:right
         ;
  
 RelationalExpression
 	::= ShiftExpression:rhs
+	{:RESULT= rhs;:}
     |   RelationalExpression:left OP_GT:op    ShiftExpression:right
 	|   RelationalExpression:left OP_LT:op    ShiftExpression:right
 	|   RelationalExpression:left OP_LE:op      ShiftExpression:right
@@ -847,16 +888,27 @@ RelationalExpression
  */
 ShiftExpression
 	::= AdditiveExpression:rhs
+	{:RESULT= rhs;:}
 	;
 
 AdditiveExpression
 	::= MultiplicativeExpression:rhs
+	{:RESULT= rhs;:}
         |   AdditiveExpression:lhs PLUSOP:op MultiplicativeExpression:rhs
+        {:
+        	lhs.makeSibling(rhs);
+        	RESULT= lhs;
+        :}
 	|   AdditiveExpression:lhs MINUSOP:op MultiplicativeExpression:rhs
+	{:
+		lhs.makeSibling(rhs);
+		RESULT= lhs;
+	:}
         ;
 
 MultiplicativeExpression
 	::= CastExpression:rhs
+	{:RESULT= rhs;:}
 	|   MultiplicativeExpression:lhs ASTERICK:op CastExpression:rhs
 	|   MultiplicativeExpression:lhs RSLASH:op CastExpression:rhs
 	|   MultiplicativeExpression:lhs PERCENT:op CastExpression:rhs	/* remainder */
@@ -867,8 +919,11 @@ MultiplicativeExpression
  */
 CastExpression
 	::= UnaryExpression:rhs						/* no cast */
+	{:RESULT= rhs;:}
         |   LPAREN PrimitiveType:s RPAREN CastExpression:lue		/* More casts coming */
+        {:RESULT= lue;:}
 	|   LPAREN Expression:exp RPAREN LogicalUnaryExpression:lue	/* Final cast */
+	{:RESULT=lue;:}
 	;
 
 /*
@@ -876,7 +931,9 @@ CastExpression
  */
 UnaryExpression
 	::= LogicalUnaryExpression:rhs
+	{:RESULT= rhs;:}
 	|   ArithmeticUnaryOperator:op CastExpression:exp
+	{:RESULT= exp;:}
 	;
 
 ArithmeticUnaryOperator
@@ -886,7 +943,9 @@ ArithmeticUnaryOperator
 
 LogicalUnaryExpression
 	::= PostfixExpression:rhs
+	{:RESULT= rhs;:}
 	|   LogicalUnaryOperator:op UnaryExpression:uexp
+	{:RESULT= uexp;:}
 	;
 
 LogicalUnaryOperator
@@ -901,9 +960,10 @@ Identifier
 
 Literal
 	::= LITERAL:lit
+	{: RESULT = makeNodeString("String " +lit); :}
 	;
 
 Number
 	::= INTNUMBER:n
-		{: RESULT = makeNode(n); :}
+		{: RESULT = makeNodeString("Int " +n.toString()); :}
 	;
