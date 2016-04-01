@@ -1,3 +1,12 @@
+/**
+ * CSE 431 Lab3
+ * 
+ * Evan Schwartzman
+ * Si Thu Aung
+ * 
+ * 
+ */
+
 package autogen;
 import lab3.*;
 import java_cup.runtime.*;
@@ -296,7 +305,7 @@ ClassDeclaration
  * A pair of booleans, like IntPair could be used, or IntPair could be used
  * if you know what I mean.
  */
-Modifiers
+Modifiers		//
 	::= PUBLIC
 	{:RESULT= "public";:}
 	|   PRIVATE
@@ -311,8 +320,6 @@ Modifiers
 	{:RESULT= mds+" static";:}
 	;
 	
-//make booleans?
-
 /*
  * Extra credit:  other types
  */
@@ -406,7 +413,6 @@ ClassBody
 FieldDeclarations
 	::= FieldDeclaration:fd
 	{:
-
 	    RESULT= fd; 
     :}
     | FieldDeclarations:fds FieldDeclaration:fd
@@ -566,7 +572,7 @@ MethodBody
 ConstructorDeclaration
 	::= Modifiers:m MethodDeclarator:md        Block:rhs
 	{:
-	name t = makeNodeString(md.getName());
+	name t = makeNodeString("");
 	name n = makeNodeString(m+" "+md.getName());
 	name body = makeNodeString("PARAMS");
 	
@@ -635,7 +641,7 @@ LocalVariableDeclarationStatement
 	RESULT=t;
 	:}
 	
-	|   ClassDeclaration                  /* Inner classes */ //LOOK AT THIS _______________________________________
+	|   ClassDeclaration                  /* Inner classes */ 				//
 	;
 
 LocalVariableDeclarators
@@ -780,6 +786,7 @@ MethodCall
 	|   MethodReference:m LPAREN RPAREN
 	{:
 	name mr = makeNodeString("Method Reference");
+	m.adoptChildren(makeNodeString("PARAMS"));
 	RESULT= (name) mr.adoptChildren(m);
 	:}
 	;
@@ -804,7 +811,7 @@ SpecialName
 
 ArgumentList
 	::= Expression:e
-	{:RESULT= e;:}	
+	{:RESULT= makeNodeString("param " +e);:}	
 	|   ArgumentList:a COMMA Expression:e
 	{:
 	a.makeSibling(e);
@@ -883,7 +890,7 @@ ConditionalExpression
 		name i = makeNodeString("SPECIAL IF");
 		ce.makeSibling(e);
 		i.adoptChildren(ce);
-		i.makeSibling(makeNodeString("SPECIAL ELSE").adoptChildren(c));
+		i.makeSibling(c);
 		RESULT= (name) i;
 		:}
 	
@@ -1064,7 +1071,7 @@ UnaryExpression
 	{:RESULT= op.adoptChildren(exp);:}
 	;
 
-ArithmeticUnaryOperator
+ArithmeticUnaryOperator		//
 	::= PLUSOP:rhs
 	{:RESULT= makeNodeString("+");:}
 	|   MINUSOP:rhs
