@@ -211,7 +211,7 @@ non terminal   name			    FieldAccess, MethodCall, MethodReference;
 non terminal   AbstractNode     SpecialName, ArgumentList, AllocationExpression;
 non terminal   AbstractNode     PostfixExpression;
 non terminal   AbstractNode     UnaryExpression, LogicalUnaryExpression;
-non terminal   AbstractNode     LogicalUnaryOperator, ArithmeticUnaryOperator;
+non terminal   name     		LogicalUnaryOperator, ArithmeticUnaryOperator;
 non terminal   AbstractNode     CastExpression, MultiplicativeExpression;
 non terminal   AbstractNode     AdditiveExpression, ShiftExpression, RelationalExpression;
 non terminal   AbstractNode     EqualityExpression, AndExpression, ExclusiveOrExpression;
@@ -959,20 +959,30 @@ RelationalExpression
 	::= ShiftExpression:rhs
 	{:RESULT= rhs;:}
     |   RelationalExpression:left OP_GT:op    ShiftExpression:right
-    
-    //LOOK AT THIS _______________________________________
+    {:
+	name o = makeNodeString(">");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
 	|   RelationalExpression:left OP_LT:op    ShiftExpression:right
-	
-	//LOOK AT THIS _______________________________________
+	{:
+	name o = makeNodeString("<");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
 	|   RelationalExpression:left OP_LE:op      ShiftExpression:right
-	
-	//LOOK AT THIS _______________________________________
+	{:
+	name o = makeNodeString("<=");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
 	|   RelationalExpression:left OP_GE:op      ShiftExpression:right
-	
-	//LOOK AT THIS _______________________________________
+	{:
+	name o = makeNodeString(">=");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
 	|   RelationalExpression:left INSTANCEOF:op TypeSpecifier:right
-	
-	//LOOK AT THIS _______________________________________
+	{:
+	name o = makeNodeString("instanceof");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
 	;
 
 /*
@@ -988,13 +998,15 @@ AdditiveExpression
 	{:RESULT= rhs;:}
         |   AdditiveExpression:lhs PLUSOP:op MultiplicativeExpression:rhs
         {:
+        	name p = makeNodeString("ADD");
         	lhs.makeSibling(rhs);
-        	RESULT= lhs;
+        	RESULT= p.adoptChildren(lhs);
         :}
 	|   AdditiveExpression:lhs MINUSOP:op MultiplicativeExpression:rhs
 	{:
+		name s = makeNodeString("SUB");
 		lhs.makeSibling(rhs);
-		RESULT= lhs;
+		RESULT= s.adoptChildren(lhs);
 	:}
         ;
 
@@ -1002,14 +1014,23 @@ MultiplicativeExpression
 	::= CastExpression:rhs
 	{:RESULT= rhs;:}
 	|   MultiplicativeExpression:lhs ASTERICK:op CastExpression:rhs
-	
-	//LOOK AT THIS _______________________________________
+	{:
+    	name p = makeNodeString("MULTIPLY");
+    	lhs.makeSibling(rhs);
+    	RESULT= p.adoptChildren(lhs);
+    :}
 	|   MultiplicativeExpression:lhs RSLASH:op CastExpression:rhs
-	
-	//LOOK AT THIS _______________________________________
+	{:
+    	name p = makeNodeString("DIVISION");
+    	lhs.makeSibling(rhs);
+    	RESULT= p.adoptChildren(lhs);
+    :}
 	|   MultiplicativeExpression:lhs PERCENT:op CastExpression:rhs	/* remainder */
-	
-	//LOOK AT THIS _______________________________________
+	{:
+    	name p = makeNodeString("REMAINDER");
+    	lhs.makeSibling(rhs);
+    	RESULT= p.adoptChildren(lhs);
+    :}
 	;
 
 /*
@@ -1019,13 +1040,18 @@ CastExpression
 	::= UnaryExpression:rhs						/* no cast */
 	{:RESULT= rhs;:}
         |   LPAREN PrimitiveType:s RPAREN CastExpression:lue		/* More casts coming */
-        
-        //LOOK AT THIS _______________________________________
-        {:RESULT= lue;:}
+    {:
+    	name p = makeNodeString("CAST");
+    	s.adoptChildren(lue);
+    	RESULT= (name) p.adoptChildren(s);
+    :}
 	|   LPAREN Expression:exp RPAREN LogicalUnaryExpression:lue	/* Final cast */
-	
-	//LOOK AT THIS _______________________________________
-	{:RESULT=lue;:}
+
+	{:
+    	name p = makeNodeString("FINAL CAST");
+    	lue.adoptChildren(exp);
+    	RESULT= (name) p.adoptChildren(lue);
+    :}
 	;
 
 /*
@@ -1035,36 +1061,28 @@ UnaryExpression
 	::= LogicalUnaryExpression:rhs
 	{:RESULT= rhs;:}
 	|   ArithmeticUnaryOperator:op CastExpression:exp
-	
-	//LOOK AT THIS _______________________________________
-	{:RESULT= exp;:}
+	{:RESULT= op.adoptChildren(exp);:}
 	;
 
 ArithmeticUnaryOperator
 	::= PLUSOP:rhs
-	
-	//LOOK AT THIS _______________________________________
+	{:RESULT= makeNodeString("+");:}
 	|   MINUSOP:rhs
-	
-	//LOOK AT THIS _______________________________________
+	{:RESULT= makeNodeString("-");:}
 	;
 
 LogicalUnaryExpression
 	::= PostfixExpression:rhs
 	{:RESULT= rhs;:}
 	|   LogicalUnaryOperator:op UnaryExpression:uexp
-	
-	//LOOK AT THIS _______________________________________
-	{:RESULT= uexp;:}
+	{:RESULT= op.adoptChildren(uexp);:}
 	;
 
 LogicalUnaryOperator
 	::= BANG:rhs
-	
-	//LOOK AT THIS _______________________________________
+	{:RESULT = makeNodeString("!");:}
 	|  TILDE:rhs
-	
-	//LOOK AT THIS _______________________________________
+	{:RESULT = makeNodeString("~");:}
 	;
 
 Identifier
