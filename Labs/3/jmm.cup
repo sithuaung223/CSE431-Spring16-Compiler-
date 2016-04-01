@@ -207,7 +207,7 @@ non terminal   AbstractNode     ExpressionStatement, SelectionStatement;
 non terminal   AbstractNode     IterationStatement;
 non terminal   AbstractNode     PrimaryExpression;
 non terminal   AbstractNode     NotJustName, ComplexPrimary, ComplexPrimaryNoParenthesis;
-non terminal   AbstractNode     FieldAccess, MethodCall, MethodReference;
+non terminal   name			    FieldAccess, MethodCall, MethodReference;
 non terminal   AbstractNode     SpecialName, ArgumentList, AllocationExpression;
 non terminal   AbstractNode     PostfixExpression;
 non terminal   AbstractNode     UnaryExpression, LogicalUnaryExpression;
@@ -223,7 +223,7 @@ non terminal   name     		Expression;
 non terminal   AbstractNode     ReturnStatement;
 
 non terminal   String           Identifier;
-non terminal   AbstractNode     Literal;
+non terminal   name     		Literal;
 non terminal   AbstractNode     Number;
 non terminal   name		    	DeclaratorName; 
 non terminal   name     		FieldVariableDeclaratorName; 
@@ -242,7 +242,6 @@ non terminal   name     		QualifiedName;
 non terminal   name	        	TypeName, TypeSpecifier;
 non terminal   name    			PrimitiveType;
 
-//fix precedence???
 precedence left LPAREN, RPAREN;
 precedence left ELSE;
 
@@ -385,6 +384,23 @@ ClassBody
 		RESULT= classBody;
     :}
 	|   LBRACE RBRACE
+	{:
+		AbstractNode classBody= makeNode("Class Body");
+		
+		name fields = makeNodeString("Fields");
+		name methods = makeNodeString("Methods");
+		name constructor = makeNodeString("Constructor");
+		name sta = makeNodeString("Static");
+		name cl = makeNodeString("Inner Classes");
+		
+		classBody.adoptChildren(fields);
+		classBody.adoptChildren(constructor);
+		classBody.adoptChildren(methods);
+		classBody.adoptChildren(sta);
+		classBody.adoptChildren(cl);
+		
+		RESULT= classBody;
+	:}
 	;
 
 FieldDeclarations
@@ -423,8 +439,8 @@ FieldDeclaration
 	:}
 	|   ClassDeclaration:cl            /* Inner classes */
 	{:
-	spcl cla = makeNodeSpcl(4, cl);	
-	RESULT= cla;
+		spcl cla = makeNodeSpcl(4, cl);	
+		RESULT= cla;
 	:}
 	;
 
@@ -619,7 +635,7 @@ LocalVariableDeclarationStatement
 	RESULT=t;
 	:}
 	
-	|   ClassDeclaration                  /* Inner classes */ //fix this!!
+	|   ClassDeclaration                  /* Inner classes */ //LOOK AT THIS _______________________________________
 	;
 
 LocalVariableDeclarators
@@ -695,16 +711,20 @@ IterationStatement
 ReturnStatement
 	::= RETURN Expression:e SEMICOLON
 	{:
-	name r = makeNodeString("Return");
-	r.adoptChildren(e);
-	RESULT=r;
+		name a= makeNodeString("Return");
+		a.adoptChildren(e);
+		RESULT=a;
 	:}
 	|   RETURN            SEMICOLON
+	{:
+		name a= makeNodeString("Return");
+		RESULT=a;
+	:}
 	;
 
 PrimaryExpression
 	::= QualifiedName:t
-	{:RESULT= t;:}
+	{:RESULT= makeNodeString("Local ref " + t);:}
 	|   NotJustName:rhs
 	{:RESULT= rhs;:}
 /*
@@ -720,7 +740,8 @@ PrimaryExpression
 NotJustName
 	::= SpecialName:spn
 	{:RESULT=spn;:}
-	|   AllocationExpression
+	|   AllocationExpression: a
+	{:RESULT= a;:}
 	|   ComplexPrimary:rhs
 	{:RESULT= rhs;:}
 	;
@@ -737,26 +758,39 @@ ComplexPrimaryNoParenthesis
 	{:RESULT= rhs;:}
 	|   Number:rhs
 	{:RESULT= rhs;:}
-	|   FieldAccess:rhs
-	{:RESULT= rhs;:}
-	|   MethodCall:rhs
-	{:RESULT= rhs;:}
+	|   FieldAccess:f
+	{:RESULT= f;:}
+	|   MethodCall:m
+	{:RESULT= m;:}
 	;
 
 FieldAccess
-	::= NotJustName PERIOD Identifier
+	::= NotJustName:n PERIOD Identifier:i
+	{: RESULT = makeNodeString(n.getName()+"."+i); :}
 	;
 
 
-MethodCall
-	::= MethodReference LPAREN ArgumentList RPAREN
-	|   MethodReference LPAREN RPAREN
+MethodCall 
+	::= MethodReference:m LPAREN ArgumentList:a RPAREN
+	{:
+	name mr = makeNodeString("Method Reference");
+	m.adoptChildren(makeNodeString("PARAMS").adoptChildren(a));
+	RESULT= (name) mr.adoptChildren(m);
+	:}
+	|   MethodReference:m LPAREN RPAREN
+	{:
+	name mr = makeNodeString("Method Reference");
+	RESULT= (name) mr.adoptChildren(m);
+	:}
 	;
 
 MethodReference
-	::= ComplexPrimaryNoParenthesis
-	|   QualifiedName
-	|   SpecialName
+	::= ComplexPrimaryNoParenthesis:cp
+	{:RESULT= (name) cp;:}
+	|   QualifiedName:q
+	{:RESULT= (name) q;:}
+	|   SpecialName:sn
+	{:RESULT= (name) sn;:}
 	;
 
 SpecialName
@@ -769,16 +803,23 @@ SpecialName
 	;
 
 ArgumentList
-	::= Expression
-	|   ArgumentList COMMA Expression
+	::= Expression:e
+	{:RESULT= e;:}	
+	|   ArgumentList:a COMMA Expression:e
+	{:
+	a.makeSibling(e);
+	RESULT= a;
+	:}
 	;
 
 /*
  * Extra credit:  anonymous subclasses
  */
 AllocationExpression
-	::= NEW TypeName LPAREN ArgumentList RPAREN
-	|   NEW TypeName LPAREN              RPAREN
+	::= NEW TypeName:t LPAREN ArgumentList:al RPAREN
+	{: RESULT = t.adoptChildren(al); :}
+	|   NEW TypeName:t LPAREN              RPAREN
+	{:RESULT= t;:}
 	;
 
 /*
@@ -810,14 +851,20 @@ Expression
 
 AssignmentExpression
 	::= ConditionalExpression:rhs
-	//fix this!!!!!!!
-	{:RESULT=makeNodeString("Local Ref " + rhs);:}
+	{:RESULT= rhs;:}
 	|   UnaryExpression:lhs AssignmentOperator:op AssignmentExpression:rhs
 	{:
-	name a = makeNodeString("Assign");
-
-	a.adoptChildren((makeNodeString("Local Ref "+lhs)).makeSibling(rhs));
-	RESULT=a;
+		name a = makeNodeString("Assign");
+		if(lhs != null){
+			if(rhs.getSib() != null){
+				lhs.adoptChildren(rhs);
+			}
+			else{
+				lhs.makeSibling(rhs);
+			}
+		}
+		a.adoptChildren(lhs);
+		RESULT=a;
 	:}
 	;
 
@@ -830,9 +877,11 @@ AssignmentOperator
 
 ConditionalExpression
 	::= ConditionalOrExpression:ce
-		{:RESULT=makeNodeString(ce.getName());:}
+		{:RESULT= (name)ce;:}
 	|   ConditionalOrExpression:ce QUESTION Expression:e COLON ConditionalExpression:c
-		{:RESULT=makeNodeString(e.getName());:}
+	
+	//LOOK AT THIS _______________________________________
+		{:RESULT= (name)ce;:}
 	
 	;
 
@@ -840,47 +889,72 @@ ConditionalOrExpression
 	::= ConditionalAndExpression:cne
 	{:RESULT=cne;:}
 	|   ConditionalOrExpression:left OP_LOR:op ConditionalAndExpression:right   /* short-circuit OR */
+	
+	//LOOK AT THIS _______________________________________
+	
 	;
 
 ConditionalAndExpression
 	::= InclusiveOrExpression:rhs
 	{:RESULT= rhs;:}
 	|   ConditionalAndExpression:left OP_LAND:op InclusiveOrExpression:right   /* short-circuit AND */
+	
+	//LOOK AT THIS _______________________________________
 	;
 
 InclusiveOrExpression
 	::= ExclusiveOrExpression:rhs
 	{:RESULT= rhs;:}
 	|   InclusiveOrExpression:left PIPE:op ExclusiveOrExpression:right
+	
+	//LOOK AT THIS _______________________________________
 	;
 
 ExclusiveOrExpression
 	::= AndExpression:rhs
 	{:RESULT= rhs;:}
 	|   ExclusiveOrExpression:left HAT:op AndExpression:right
+	
+	//LOOK AT THIS _______________________________________
 	;
 
 AndExpression
 	::= EqualityExpression:rhs
 	{:RESULT= rhs;:}
         |   AndExpression:left AND:op EqualityExpression:right
+        
+        //LOOK AT THIS _______________________________________
         ;
 
 EqualityExpression
 	::= RelationalExpression:rhs
 	{:RESULT= rhs;:}
         |   EqualityExpression:left OP_EQ:op RelationalExpression:right
+        
+        //LOOK AT THIS _______________________________________
         |   EqualityExpression:left OP_NE:op RelationalExpression:right
+        
+        //LOOK AT THIS _______________________________________
         ;
  
 RelationalExpression
 	::= ShiftExpression:rhs
 	{:RESULT= rhs;:}
     |   RelationalExpression:left OP_GT:op    ShiftExpression:right
+    
+    //LOOK AT THIS _______________________________________
 	|   RelationalExpression:left OP_LT:op    ShiftExpression:right
+	
+	//LOOK AT THIS _______________________________________
 	|   RelationalExpression:left OP_LE:op      ShiftExpression:right
+	
+	//LOOK AT THIS _______________________________________
 	|   RelationalExpression:left OP_GE:op      ShiftExpression:right
+	
+	//LOOK AT THIS _______________________________________
 	|   RelationalExpression:left INSTANCEOF:op TypeSpecifier:right
+	
+	//LOOK AT THIS _______________________________________
 	;
 
 /*
@@ -910,8 +984,14 @@ MultiplicativeExpression
 	::= CastExpression:rhs
 	{:RESULT= rhs;:}
 	|   MultiplicativeExpression:lhs ASTERICK:op CastExpression:rhs
+	
+	//LOOK AT THIS _______________________________________
 	|   MultiplicativeExpression:lhs RSLASH:op CastExpression:rhs
+	
+	//LOOK AT THIS _______________________________________
 	|   MultiplicativeExpression:lhs PERCENT:op CastExpression:rhs	/* remainder */
+	
+	//LOOK AT THIS _______________________________________
 	;
 
 /*
@@ -921,8 +1001,12 @@ CastExpression
 	::= UnaryExpression:rhs						/* no cast */
 	{:RESULT= rhs;:}
         |   LPAREN PrimitiveType:s RPAREN CastExpression:lue		/* More casts coming */
+        
+        //LOOK AT THIS _______________________________________
         {:RESULT= lue;:}
 	|   LPAREN Expression:exp RPAREN LogicalUnaryExpression:lue	/* Final cast */
+	
+	//LOOK AT THIS _______________________________________
 	{:RESULT=lue;:}
 	;
 
@@ -933,24 +1017,36 @@ UnaryExpression
 	::= LogicalUnaryExpression:rhs
 	{:RESULT= rhs;:}
 	|   ArithmeticUnaryOperator:op CastExpression:exp
+	
+	//LOOK AT THIS _______________________________________
 	{:RESULT= exp;:}
 	;
 
 ArithmeticUnaryOperator
 	::= PLUSOP:rhs
+	
+	//LOOK AT THIS _______________________________________
 	|   MINUSOP:rhs
+	
+	//LOOK AT THIS _______________________________________
 	;
 
 LogicalUnaryExpression
 	::= PostfixExpression:rhs
 	{:RESULT= rhs;:}
 	|   LogicalUnaryOperator:op UnaryExpression:uexp
+	
+	//LOOK AT THIS _______________________________________
 	{:RESULT= uexp;:}
 	;
 
 LogicalUnaryOperator
 	::= BANG:rhs
+	
+	//LOOK AT THIS _______________________________________
 	|  TILDE:rhs
+	
+	//LOOK AT THIS _______________________________________
 	;
 
 Identifier
@@ -960,10 +1056,10 @@ Identifier
 
 Literal
 	::= LITERAL:lit
-	{: RESULT = makeNodeString("String " +lit); :}
+		{: RESULT = makeNodeString("Literal "+ lit); :}
 	;
 
 Number
 	::= INTNUMBER:n
-		{: RESULT = makeNodeString("Int " +n.toString()); :}
+		{: RESULT = makeNodeString("Int "+ n.toString()); :}
 	;
