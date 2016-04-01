@@ -374,18 +374,18 @@ ClassBody
 		while(fds != null){
 		
 			if(fds.getName2() == 0){
-			fields.adoptChildren(fds.getN());
+				fields.adoptChildren(fds.getN());
 			}else if(fds.getName2() == 1){
-			methods.adoptChildren(fds.getN());
+				methods.adoptChildren(fds.getN());
 			}else if(fds.getName2() == 2){
-			constructor.adoptChildren(fds.getN());
+				constructor.adoptChildren(fds.getN());
 			}else if(fds.getName2() == 3){
-			sta.adoptChildren(fds.getN());
+				sta.adoptChildren(fds.getN());
 			}else if(fds.getName2() == 4){
-			cl.adoptChildren(fds.getN());
+				cl.adoptChildren(fds.getN());
 			}
     	
-    	fds = (spcl) fds.getSib(); 
+    		fds = (spcl) fds.getSib(); 
     	}
 		
 		RESULT= classBody;
@@ -425,23 +425,23 @@ FieldDeclarations
 FieldDeclaration
 	::= FieldVariableDeclaration:fvd SEMICOLON
 	{:
-	spcl field = makeNodeSpcl(0, fvd);	
-	RESULT= field;
+		spcl field = makeNodeSpcl(0, fvd);	
+		RESULT= field;
 	:}
 	|   MethodDeclaration:rhs
 	{:
-	spcl method = makeNodeSpcl(1, rhs);	
-	RESULT= method;
+		spcl method = makeNodeSpcl(1, rhs);	
+		RESULT= method;
 	:}
 	|   ConstructorDeclaration:rhs
 	{:
-	spcl constructors = makeNodeSpcl(2, rhs);	
-	RESULT= constructors;
+		spcl constructors = makeNodeSpcl(2, rhs);	
+		RESULT= constructors;
 	:}
 	|   StaticInitializer:rhs
 	{:
-	spcl sta = makeNodeSpcl(3, rhs);	
-	RESULT= sta;
+		spcl sta = makeNodeSpcl(3, rhs);	
+		RESULT= sta;
 	:}
 	|   ClassDeclaration:cl            /* Inner classes */
 	{:
@@ -529,9 +529,7 @@ MethodDeclarator
 
 ParameterList
 	::= Parameter:rhs
-	{:
-		RESULT= rhs;
-    :}
+	{: RESULT= rhs; :}
 	|   ParameterList:spine COMMA Parameter:rhs
 	{:
 		spine.makeSibling(rhs);
@@ -572,26 +570,24 @@ MethodBody
 ConstructorDeclaration
 	::= Modifiers:m MethodDeclarator:md        Block:rhs
 	{:
-	name t = makeNodeString("");
-	name n = makeNodeString(m+" "+md.getName());
-	name body = makeNodeString("PARAMS");
-	
-	if(md.getParam() != null){
-			body.adoptChildren(md.getParam());
-		}
+		name t = makeNodeString("");
+		name n = makeNodeString(m+" "+md.getName());
+		name body = makeNodeString("PARAMS");
 		
-	n.adoptChildren(body);
-	body.makeSibling(rhs);
-	t.adoptChildren(n);
-	RESULT= t;
+		if(md.getParam() != null){
+				body.adoptChildren(md.getParam());
+			}
+			
+		n.adoptChildren(body);
+		body.makeSibling(rhs);
+		t.adoptChildren(n);
+		RESULT= t;
 	:}
 	;
 
 StaticInitializer
 	::= STATIC Block:rhs
-	{:
-	RESULT= rhs;
-	:}
+	{: RESULT= rhs; :}
 	;
 
 /*
@@ -601,9 +597,9 @@ StaticInitializer
 Block
 	::= LBRACE LocalVariableDeclarationsAndStatements:stmts RBRACE
 	{:
-	name t = makeNodeString("BLOCK");
-	t.adoptChildren(stmts);
-	RESULT= t;
+		name t = makeNodeString("BLOCK");
+		t.adoptChildren(stmts);
+		RESULT= t;
 	:}
 	|   LBRACE RBRACE
         ;
@@ -614,10 +610,10 @@ LocalVariableDeclarationsAndStatements
 	|   LocalVariableDeclarationsAndStatements:lvds 
 	    LocalVariableDeclarationOrStatement:rhs
 	    {:
-	    if(rhs != null){
-	    lvds.makeSibling(rhs);
-	    }
-	    RESULT=lvds;
+		    if(rhs != null){
+		    lvds.makeSibling(rhs);
+		    }
+		    RESULT=lvds;
 	    :}
 	;
 
@@ -631,14 +627,14 @@ LocalVariableDeclarationOrStatement
 LocalVariableDeclarationStatement
 	::= TypeSpecifier:t LocalVariableDeclarators:rhs SEMICOLON
 	{:
-	t.adoptChildren(makeNodeString("Local" + " " + t + " " + rhs));
-	
-	while(rhs.getSib() != null){
-		t.adoptChildren(makeNodeString("Local" + " " + t + " " + rhs.getSib()));
-		rhs = rhs.getSib();
-	}
-	
-	RESULT=t;
+		t.adoptChildren(makeNodeString("Local" + " " + t + " " + rhs));
+		
+		while(rhs.getSib() != null){
+			t.adoptChildren(makeNodeString("Local" + " " + t + " " + rhs.getSib()));
+			rhs = rhs.getSib();
+		}
+		
+		RESULT=t;
 	:}
 	
 	|   ClassDeclaration                  /* Inner classes */ 				//
@@ -649,8 +645,8 @@ LocalVariableDeclarators
 	{:RESULT=v;:}
 	|   LocalVariableDeclarators:fds COMMA LocalVariableDeclaratorName:v
 	{:
-	fds.makeSibling(v);
-	RESULT=fds;
+		fds.makeSibling(v);
+		RESULT=fds;
 	:}
 	;
 
@@ -686,7 +682,7 @@ ExpressionStatement
 SelectionStatement
 	::= IF LPAREN Expression:exp RPAREN Statement:stmt1 ELSE Statement:stmt2
 	{:
-		name a= makeNodeString("IF");
+		name a= makeNodeString("If");
 		a.adoptChildren(exp);
 		a.adoptChildren(stmt1);
 		a.adoptChildren(stmt2);
@@ -694,7 +690,7 @@ SelectionStatement
 	:}
 	|   IF LPAREN Expression:exp RPAREN Statement:stmt
 	{:
-		name a= makeNodeString("IF");
+		name a= makeNodeString("If");
 		a.adoptChildren(exp);
 		a.adoptChildren(stmt);
 		RESULT= a;
@@ -730,7 +726,7 @@ ReturnStatement
 
 PrimaryExpression
 	::= QualifiedName:t
-	{:RESULT= makeNodeString("Local ref " + t);:}
+	{:RESULT= makeNodeString("Local Ref " + t);:}
 	|   NotJustName:rhs
 	{:RESULT= rhs;:}
 /*
@@ -779,15 +775,15 @@ FieldAccess
 MethodCall 
 	::= MethodReference:m LPAREN ArgumentList:a RPAREN
 	{:
-	name mr = makeNodeString("Method Reference");
-	m.adoptChildren(makeNodeString("PARAMS").adoptChildren(a));
-	RESULT= (name) mr.adoptChildren(m);
+		name mr = makeNodeString("Method Call");
+		m.adoptChildren(makeNodeString("PARAMS").adoptChildren(a));
+		RESULT= (name) mr.adoptChildren(m);
 	:}
 	|   MethodReference:m LPAREN RPAREN
 	{:
-	name mr = makeNodeString("Method Reference");
-	m.adoptChildren(makeNodeString("PARAMS"));
-	RESULT= (name) mr.adoptChildren(m);
+		name mr = makeNodeString("Method Call");
+		m.adoptChildren(makeNodeString("PARAMS"));
+		RESULT= (name) mr.adoptChildren(m);
 	:}
 	;
 
@@ -814,8 +810,8 @@ ArgumentList
 	{:RESULT= makeNodeString("param " +e);:}	
 	|   ArgumentList:a COMMA Expression:e
 	{:
-	a.makeSibling(e);
-	RESULT= a;
+		a.makeSibling(makeNodeString("param " +e));
+		RESULT= a;
 	:}
 	;
 
@@ -865,8 +861,7 @@ AssignmentExpression
 		if(lhs != null){
 			if(rhs.getSib() != null){
 				lhs.adoptChildren(rhs);
-			}
-			else{
+			}else{
 				lhs.makeSibling(rhs);
 			}
 		}
@@ -887,11 +882,11 @@ ConditionalExpression
 		{:RESULT= (name)ce;:}
 	|   ConditionalOrExpression:ce QUESTION Expression:e COLON ConditionalExpression:c
 		{:
-		name i = makeNodeString("SPECIAL IF");
-		ce.makeSibling(e);
-		i.adoptChildren(ce);
-		i.makeSibling(c);
-		RESULT= (name) i;
+			name i = makeNodeString("Special If");
+			ce.makeSibling(e);
+			i.adoptChildren(ce);
+			i.makeSibling(c);
+			RESULT= (name) i;
 		:}
 	
 	;
@@ -901,8 +896,8 @@ ConditionalOrExpression
 	{:RESULT=cne;:}
 	|   ConditionalOrExpression:left OP_LOR:op ConditionalAndExpression:right   /* short-circuit OR */
 	{:
-	name o = makeNodeString("||");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString("||");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
 	;
 
@@ -911,8 +906,8 @@ ConditionalAndExpression
 	{:RESULT= rhs;:}
 	|   ConditionalAndExpression:left OP_LAND:op InclusiveOrExpression:right   /* short-circuit AND */
 	{:
-	name o = makeNodeString("&&");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString("&&");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
 	;
 
@@ -921,8 +916,8 @@ InclusiveOrExpression
 	{:RESULT= rhs;:}
 	|   InclusiveOrExpression:left PIPE:op ExclusiveOrExpression:right
 	{:
-	name o = makeNodeString("|");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString("|");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
 	;
 
@@ -931,8 +926,8 @@ ExclusiveOrExpression
 	{:RESULT= rhs;:}
 	|   ExclusiveOrExpression:left HAT:op AndExpression:right
 	{:
-	name o = makeNodeString("^");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString("^");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
 	;
 
@@ -941,8 +936,8 @@ AndExpression
 	{:RESULT= rhs;:}
         |   AndExpression:left AND:op EqualityExpression:right
     {:
-	name o = makeNodeString("&");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString("&");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
         ;
 
@@ -951,14 +946,14 @@ EqualityExpression
 	{:RESULT= rhs;:}
         |   EqualityExpression:left OP_EQ:op RelationalExpression:right
     {:
-	name o = makeNodeString("==");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString("==");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
 
         |   EqualityExpression:left OP_NE:op RelationalExpression:right
 	{:
-	name o = makeNodeString("!=");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString("!=");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
         ;
  
@@ -967,28 +962,28 @@ RelationalExpression
 	{:RESULT= rhs;:}
     |   RelationalExpression:left OP_GT:op    ShiftExpression:right
     {:
-	name o = makeNodeString(">");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString(">");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
 	|   RelationalExpression:left OP_LT:op    ShiftExpression:right
 	{:
-	name o = makeNodeString("<");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString("<");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
 	|   RelationalExpression:left OP_LE:op      ShiftExpression:right
 	{:
-	name o = makeNodeString("<=");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString("<=");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
 	|   RelationalExpression:left OP_GE:op      ShiftExpression:right
 	{:
-	name o = makeNodeString(">=");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString(">=");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
 	|   RelationalExpression:left INSTANCEOF:op TypeSpecifier:right
 	{:
-	name o = makeNodeString("instanceof");
-	RESULT= o.adoptChildren(left.makeSibling(right));
+		name o = makeNodeString("instanceof");
+		RESULT= o.adoptChildren(left.makeSibling(right));
 	:}
 	;
 
@@ -1005,13 +1000,13 @@ AdditiveExpression
 	{:RESULT= rhs;:}
         |   AdditiveExpression:lhs PLUSOP:op MultiplicativeExpression:rhs
         {:
-        	name p = makeNodeString("ADD");
+        	name p = makeNodeString("+");
         	lhs.makeSibling(rhs);
         	RESULT= p.adoptChildren(lhs);
         :}
 	|   AdditiveExpression:lhs MINUSOP:op MultiplicativeExpression:rhs
 	{:
-		name s = makeNodeString("SUB");
+		name s = makeNodeString("-");
 		lhs.makeSibling(rhs);
 		RESULT= s.adoptChildren(lhs);
 	:}
@@ -1022,19 +1017,19 @@ MultiplicativeExpression
 	{:RESULT= rhs;:}
 	|   MultiplicativeExpression:lhs ASTERICK:op CastExpression:rhs
 	{:
-    	name p = makeNodeString("MULTIPLY");
+    	name p = makeNodeString("*");
     	lhs.makeSibling(rhs);
     	RESULT= p.adoptChildren(lhs);
     :}
 	|   MultiplicativeExpression:lhs RSLASH:op CastExpression:rhs
 	{:
-    	name p = makeNodeString("DIVISION");
+    	name p = makeNodeString("/");
     	lhs.makeSibling(rhs);
     	RESULT= p.adoptChildren(lhs);
     :}
 	|   MultiplicativeExpression:lhs PERCENT:op CastExpression:rhs	/* remainder */
 	{:
-    	name p = makeNodeString("REMAINDER");
+    	name p = makeNodeString("%");
     	lhs.makeSibling(rhs);
     	RESULT= p.adoptChildren(lhs);
     :}
@@ -1048,14 +1043,14 @@ CastExpression
 	{:RESULT= rhs;:}
         |   LPAREN PrimitiveType:s RPAREN CastExpression:lue		/* More casts coming */
     {:
-    	name p = makeNodeString("CAST");
+    	name p = makeNodeString("Cast");
     	s.adoptChildren(lue);
     	RESULT= (name) p.adoptChildren(s);
     :}
 	|   LPAREN Expression:exp RPAREN LogicalUnaryExpression:lue	/* Final cast */
 
 	{:
-    	name p = makeNodeString("FINAL CAST");
+    	name p = makeNodeString("Final Cast");
     	lue.adoptChildren(exp);
     	RESULT= (name) p.adoptChildren(lue);
     :}
@@ -1073,9 +1068,9 @@ UnaryExpression
 
 ArithmeticUnaryOperator		//
 	::= PLUSOP:rhs
-	{:RESULT= makeNodeString("+");:}
+	{:RESULT= makeNodeString("??????");:}
 	|   MINUSOP:rhs
-	{:RESULT= makeNodeString("-");:}
+	{:RESULT= makeNodeString("??????");:}
 	;
 
 LogicalUnaryExpression
@@ -1099,10 +1094,10 @@ Identifier
 
 Literal
 	::= LITERAL:lit
-		{: RESULT = makeNodeString("Literal "+ lit); :}
+	{: RESULT = makeNodeString("Literal "+ lit); :}
 	;
 
 Number
 	::= INTNUMBER:n
-		{: RESULT = makeNodeString("Int "+ n.toString()); :}
+	{: RESULT = makeNodeString("Int "+ n.toString()); :}
 	;
