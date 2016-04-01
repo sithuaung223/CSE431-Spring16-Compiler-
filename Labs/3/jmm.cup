@@ -879,9 +879,13 @@ ConditionalExpression
 	::= ConditionalOrExpression:ce
 		{:RESULT= (name)ce;:}
 	|   ConditionalOrExpression:ce QUESTION Expression:e COLON ConditionalExpression:c
-	
-	//LOOK AT THIS _______________________________________
-		{:RESULT= (name)ce;:}
+		{:
+		name i = makeNodeString("SPECIAL IF");
+		ce.makeSibling(e);
+		i.adoptChildren(ce);
+		i.makeSibling(makeNodeString("SPECIAL ELSE").adoptChildren(c));
+		RESULT= (name) i;
+		:}
 	
 	;
 
@@ -889,52 +893,66 @@ ConditionalOrExpression
 	::= ConditionalAndExpression:cne
 	{:RESULT=cne;:}
 	|   ConditionalOrExpression:left OP_LOR:op ConditionalAndExpression:right   /* short-circuit OR */
-	
-	//LOOK AT THIS _______________________________________
-	
+	{:
+	name o = makeNodeString("||");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
 	;
 
 ConditionalAndExpression
 	::= InclusiveOrExpression:rhs
 	{:RESULT= rhs;:}
 	|   ConditionalAndExpression:left OP_LAND:op InclusiveOrExpression:right   /* short-circuit AND */
-	
-	//LOOK AT THIS _______________________________________
+	{:
+	name o = makeNodeString("&&");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
 	;
 
 InclusiveOrExpression
 	::= ExclusiveOrExpression:rhs
 	{:RESULT= rhs;:}
 	|   InclusiveOrExpression:left PIPE:op ExclusiveOrExpression:right
-	
-	//LOOK AT THIS _______________________________________
+	{:
+	name o = makeNodeString("|");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
 	;
 
 ExclusiveOrExpression
 	::= AndExpression:rhs
 	{:RESULT= rhs;:}
 	|   ExclusiveOrExpression:left HAT:op AndExpression:right
-	
-	//LOOK AT THIS _______________________________________
+	{:
+	name o = makeNodeString("^");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
 	;
 
 AndExpression
 	::= EqualityExpression:rhs
 	{:RESULT= rhs;:}
         |   AndExpression:left AND:op EqualityExpression:right
-        
-        //LOOK AT THIS _______________________________________
+    {:
+	name o = makeNodeString("&");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
         ;
 
 EqualityExpression
 	::= RelationalExpression:rhs
 	{:RESULT= rhs;:}
         |   EqualityExpression:left OP_EQ:op RelationalExpression:right
-        
-        //LOOK AT THIS _______________________________________
+    {:
+	name o = makeNodeString("==");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
+
         |   EqualityExpression:left OP_NE:op RelationalExpression:right
-        
-        //LOOK AT THIS _______________________________________
+	{:
+	name o = makeNodeString("!=");
+	RESULT= o.adoptChildren(left.makeSibling(right));
+	:}
         ;
  
 RelationalExpression
