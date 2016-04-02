@@ -82,7 +82,7 @@ action code {:
    
    }
    
-     class fieldNode extends AbstractNode {
+   class fieldNode extends AbstractNode {
    
      private String mod,type,list;
    
@@ -140,6 +140,21 @@ action code {:
    
    }
    
+   class decOrClass extends AbstractNode {
+   
+     private name name_node;
+     private classDlcNode cla;
+   
+     public decOrClass(name n, classDlcNode c) {
+       this.name_node = n;
+       this.cla = c;
+     }
+   
+     public name getName3() { return name_node; }
+     public classDlcNode getN2() { return cla; }
+   
+   }
+   
    
    class IntegerNode extends AbstractNode {
       private Integer val;
@@ -162,6 +177,7 @@ action code {:
    public methodNode makeNodeMethod(String mod, String type, String list) { return new methodNode(mod, type, list); }
    public paramNode makeNodeParam(String type, name n) { return new paramNode(type, n); }
    public spcl makeNodeSpcl(Integer name, AbstractNode node) { return new spcl(name, node); }
+   public decOrClass makeNodeDual(name n, classDlcNode c) { return new decOrClass(n, c); }
 :};
 
 /*
@@ -210,7 +226,7 @@ non terminal   AbstractNode     StaticInitializer;
 non terminal   name			    Block;
 non terminal   AbstractNode     LocalVariableDeclarationsAndStatements;
 non terminal   AbstractNode     LocalVariableDeclarationOrStatement;
-non terminal   name			    LocalVariableDeclarationStatement ;
+non terminal   decOrClass		LocalVariableDeclarationStatement ;
 non terminal   AbstractNode     Statement, EmptyStatement;
 non terminal   AbstractNode     ExpressionStatement, SelectionStatement;
 non terminal   AbstractNode     IterationStatement;
@@ -623,7 +639,13 @@ LocalVariableDeclarationsAndStatements
 
 LocalVariableDeclarationOrStatement
 	::= LocalVariableDeclarationStatement:rhs
-	{:RESULT=rhs;:}
+	{:
+		if(rhs.getName3() == null){
+			RESULT = rhs.getN2();
+		}else if(rhs.getN2() == null){
+			RESULT = rhs.getName3();
+		}
+	:}
 	|   Statement:rhs
 	{:RESULT=rhs;:}
 	;
@@ -638,10 +660,11 @@ LocalVariableDeclarationStatement
 			rhs = rhs.getSib();
 		}
 		
-		RESULT=t;
+		RESULT=makeNodeDual(t, null);
 	:}
 	
-	|   ClassDeclaration                  /* Inner classes */ 				//
+	|   ClassDeclaration:cl                  /* Inner classes */ 			
+	{: RESULT = makeNodeDual(null, cl); :}	
 	;
 
 LocalVariableDeclarators
@@ -886,10 +909,10 @@ ConditionalExpression
 		{:RESULT= (name)ce;:}
 	|   ConditionalOrExpression:ce QUESTION Expression:e COLON ConditionalExpression:c
 		{:
-			name i = makeNodeString("Special If");
+			name i = makeNodeString("If");
 			ce.makeSibling(e);
 			i.adoptChildren(ce);
-			i.makeSibling(c);
+			i.adoptChildren(c);
 			RESULT= (name) i;
 		:}
 	
