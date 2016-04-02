@@ -4,7 +4,17 @@
  * Evan Schwartzman
  * Si Thu Aung
  * 
- * 
+ * This is the final version, not the one in Si Thu's repo. Thank You.
+ *
+ * name is essentially a node we made that can hold a string. In many places, since we were just passing up
+ * AbstractNodes we left those node types as is, without the need to make them a special node type.
+ *
+ * Precedence rule fix is after non terminal declarations
+ *
+ * We used the reference parser as a guide, but made a few different design decisions. For example, we make mathematical 
+ * symbols nodes that adopt their children, so for example, if one thing is > than another, > adopts the children.
+ *
+ * Fixed modifier so something like public public private becomes private...
  */
 
 package autogen;
@@ -155,6 +165,23 @@ action code {:
    
    }
    
+   class modNode extends AbstractNode {
+   
+     private String mod;
+     private Integer boo;
+     private Integer sta;
+   
+     public modNode(String m, int b, int s) {
+       this.mod = m;
+       this.boo = b;
+       this.sta = s;
+     }
+   
+     public String getName4() { return mod; }
+     public Integer getInt() { return boo; }
+     public Integer getInt2() { return sta; }
+   
+   }
    
    class IntegerNode extends AbstractNode {
       private Integer val;
@@ -178,6 +205,7 @@ action code {:
    public paramNode makeNodeParam(String type, name n) { return new paramNode(type, n); }
    public spcl makeNodeSpcl(Integer name, AbstractNode node) { return new spcl(name, node); }
    public decOrClass makeNodeDual(name n, classDlcNode c) { return new decOrClass(n, c); }
+   public modNode makeNodeMod(String n, Integer i, Integer w) { return new modNode(n, i, w); }
 :};
 
 /*
@@ -258,7 +286,7 @@ non terminal   AbstractNode     TypeDeclarations;
 non terminal   AbstractNode     TypeDeclaration;
 non terminal   classDlcNode    	ClassDeclaration;
 non terminal   AbstractNode     ClassBody;
-non terminal   String           Modifiers;
+non terminal   modNode          Modifiers;
 non terminal   spcl     		FieldDeclarations;
 non terminal   spcl     		FieldDeclaration;
 non terminal   name 	     	FieldVariableDeclarators;
@@ -267,6 +295,7 @@ non terminal   name     		QualifiedName;
 non terminal   name	        	TypeName, TypeSpecifier;
 non terminal   name    			PrimitiveType;
 
+//Precedence fix to solve SHift-Reduce conflict
 precedence left LPAREN, RPAREN;
 precedence left ELSE;
 
@@ -308,7 +337,7 @@ TypeDeclaration
 ClassDeclaration
         ::= Modifiers:mods CLASS:cl Identifier:id ClassBody:clb
         {:
-        	classDlcNode classDlc= makeNode(mods, id);
+        	classDlcNode classDlc= makeNode(mods.getName4(), id);
         	classDlc.adoptChildren(clb);
         	RESULT= classDlc;
         :}
@@ -321,19 +350,46 @@ ClassDeclaration
  * A pair of booleans, like IntPair could be used, or IntPair could be used
  * if you know what I mean.
  */
-Modifiers		//
+ 
+// 1 means is public or is static depending on field
+ 
+Modifiers		
 	::= PUBLIC
-	{:RESULT= "public";:}
+	{:RESULT= makeNodeMod("public", 1, 0);:}
 	|   PRIVATE
-	{:RESULT= "private";:}
+	{:RESULT= makeNodeMod("private", 0, 0);:}
 	|   STATIC
-	{:RESULT= "static";:}
+	{:RESULT= makeNodeMod("private static", 0, 1);:}
 	|   Modifiers:mds PUBLIC
-	{:RESULT= mds+" public";:}
+	{:
+		if (mds.getInt() == 0 && mds.getInt2() == 0){
+			RESULT= makeNodeMod("public",0, 0);
+		}else if (mds.getInt() == 0 && mds.getInt2() == 1 ){
+			RESULT= makeNodeMod("public static", 1, 1);
+		}else if (mds.getInt() == 1){
+			RESULT= makeNodeMod(mds.getName4(), mds.getInt(), mds.getInt2());
+		}
+	:}
 	|   Modifiers:mds PRIVATE
-	{:RESULT= mds+ " private";:}
+	{:
+		if (mds.getInt() == 1 && mds.getInt2() == 0){
+			RESULT= makeNodeMod("private",0, 0);
+		}else if (mds.getInt() == 1 && mds.getInt2() == 1 ){
+			RESULT= makeNodeMod("private static", 0, 1);
+		}else if (mds.getInt() == 0){
+			RESULT= makeNodeMod(mds.getName4(), mds.getInt(), mds.getInt2());
+		}
+	:}
 	|   Modifiers:mds STATIC
-	{:RESULT= mds+" static";:}
+	{:
+		if (mds.getInt() == 0 && mds.getInt2() == 0){
+			RESULT= makeNodeMod("private static",0, 1);
+		}else if (mds.getInt() == 1 && mds.getInt2() == 0 ){
+			RESULT= makeNodeMod("public static", 1, 1);
+		}else if (mds.getInt2() == 1){
+			RESULT= makeNodeMod(mds.getName4(), mds.getInt(), mds.getInt2());
+		}
+	:}
 	;
 	
 /*
@@ -438,6 +494,8 @@ FieldDeclarations
     :}
     ;
 
+// Use ints to tell it which parent should adopt this thing...
+
 FieldDeclaration
 	::= FieldVariableDeclaration:fvd SEMICOLON
 	{:
@@ -476,11 +534,11 @@ FieldDeclaration
 FieldVariableDeclaration
 	::= Modifiers:m TypeSpecifier:t FieldVariableDeclarators:fvds
 	{:
-		fieldNode f = makeNode(m, t.getName(), fvds.getName());
+		fieldNode f = makeNode(m.getName4(), t.getName(), fvds.getName());
 	    t.adoptChildren(f);
 	    
 		while(fvds.getSib() != null){
-		    fieldNode field = makeNode(m, t.getName(), fvds.getSib().getName());
+		    fieldNode field = makeNode(m.getName4(), t.getName(), fvds.getSib().getName());
 		    t.adoptChildren(field);
 		    fvds = (name)fvds.getSib();
 	    }
@@ -516,7 +574,7 @@ FieldVariableDeclarators
 MethodDeclaration
 	::= Modifiers:m TypeSpecifier:t MethodDeclarator:md     MethodBody:rhs
 	{:
-		methodNode mn = makeNodeMethod(m, t.getName(), md.getName());
+		methodNode mn = makeNodeMethod(m.getName4(), t.getName(), md.getName());
 		t.adoptChildren(mn);
 		name body = makeNodeString("PARAMS");
 		
@@ -587,7 +645,7 @@ ConstructorDeclaration
 	::= Modifiers:m MethodDeclarator:md        Block:rhs
 	{:
 		name t = makeNodeString("");
-		name n = makeNodeString(m+" "+md.getName());
+		name n = makeNodeString(m.getName4()+" "+md.getName());
 		name body = makeNodeString("PARAMS");
 		
 		if(md.getParam() != null){
