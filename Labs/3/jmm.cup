@@ -360,8 +360,8 @@ ClassBody
 		
 		name fields = makeNodeString("Fields");
 		name methods = makeNodeString("Methods");
-		name constructor = makeNodeString("Constructor");
-		name sta = makeNodeString("Static");
+		name constructor = makeNodeString("Constructors");
+		name sta = makeNodeString("Statics");
 		name cl = makeNodeString("Inner Classes");
 		
 		classBody.adoptChildren(fields);
@@ -396,8 +396,8 @@ ClassBody
 		
 		name fields = makeNodeString("Fields");
 		name methods = makeNodeString("Methods");
-		name constructor = makeNodeString("Constructor");
-		name sta = makeNodeString("Static");
+		name constructor = makeNodeString("Constructors");
+		name sta = makeNodeString("Statics");
 		name cl = makeNodeString("Inner Classes");
 		
 		classBody.adoptChildren(fields);
@@ -602,6 +602,10 @@ Block
 		RESULT= t;
 	:}
 	|   LBRACE RBRACE
+		{:
+			name t = makeNodeString("BLOCK");
+			RESULT= t;
+		:}
         ;
 
 LocalVariableDeclarationsAndStatements
@@ -1066,11 +1070,11 @@ UnaryExpression
 	{:RESULT= op.adoptChildren(exp);:}
 	;
 
-ArithmeticUnaryOperator		//
+ArithmeticUnaryOperator		
 	::= PLUSOP:rhs
-	{:RESULT= makeNodeString("??????");:}
+	{:RESULT= makeNodeString("Unary Plus");:}
 	|   MINUSOP:rhs
-	{:RESULT= makeNodeString("??????");:}
+	{:RESULT= makeNodeString("Negate");:}
 	;
 
 LogicalUnaryExpression
