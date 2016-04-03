@@ -6,15 +6,17 @@
  * 
  * This is the final version, not the one in Si Thu's repo. Thank You.
  *
- * name is essentially a node we made that can hold a string. In many places, since we were just passing up
- * AbstractNodes we left those node types as is, without the need to make them a special node type.
+ * name is essentially a node we made that can hold a string, as the title of the node. 
+ * Since many nodes simply need a title, whether it be a +, or a variable type, or a return declaration, etc., name can be used for all of them. 
+ * Special nodes were made in the few cases where extra information, besides this "title" were needed, 
+ * for example Class Declaration nodes, which have properties of modifiers and types.
  *
  * Precedence rule fix is after non terminal declarations
  *
  * We used the reference parser as a guide, but made a few different design decisions. For example, we make mathematical 
  * symbols nodes that adopt their children, so for example, if one thing is > than another, > adopts the children.
  *
- * Fixed modifier so something like public public private becomes private...
+ * Fixed modifier so something like public public private becomes private, as demonstrated in the reference...
  */
 
 package autogen;
