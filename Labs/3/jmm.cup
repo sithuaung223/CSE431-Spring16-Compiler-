@@ -7,9 +7,13 @@
  * This is the final version, not the one in Si Thu's repo. Thank You.
  *
  * name is essentially a node we made that can hold a string, as the title of the node. 
- * Since many nodes simply need a title, whether it be a +, or a variable type, or a return declaration, etc., name can be used for all of them. 
- * Special nodes were made in the few cases where extra information, besides this "title" were needed, 
- * for example Class Declaration nodes, which have properties of modifiers and types.
+ * Since many nodes need a title, name can be used for many different nodes. So for example we may make an "if" name node and have it adopt if's children.
+ * Some of these nodes will need to be further refined for type checking if used in lab4, but for this lab we used a combination of new nodes
+ * and name 'temporaryNode' type ones to hold "titles"
+ * 
+ * Special nodes were made in some cases where extra information, besides this "title" were needed, 
+ * for example Class Declaration nodes, which have properties of modifiers and types. We also created Type, method, param, int, field,
+ * and a few more new node types.
  *
  * Precedence rule fix is after non terminal declarations
  *
@@ -17,6 +21,8 @@
  * symbols nodes that adopt their children, so for example, if one thing is > than another, > adopts the children.
  *
  * Fixed modifier so something like public public private becomes private, as demonstrated in the reference...
+ *
+ * Some added nodes and methods are in the action block. 
  */
 
 package autogen;
@@ -154,15 +160,15 @@ action code {:
    
    class decOrClass extends AbstractNode {
    
-     private name name_node;
+     private typeNode name_node;
      private classDlcNode cla;
    
-     public decOrClass(name n, classDlcNode c) {
+     public decOrClass(typeNode n, classDlcNode c) {
        this.name_node = n;
        this.cla = c;
      }
    
-     public name getName3() { return name_node; }
+     public typeNode getName3() { return name_node; }
      public classDlcNode getN2() { return cla; }
    
    }
@@ -188,7 +194,19 @@ action code {:
    class IntegerNode extends AbstractNode {
       private Integer val;
       public IntegerNode(Integer val) { this.val = val; }
-      public String getName() { return "Integer " + val; }
+      public String getName() { return "Int " + val; }
+   }
+   
+   class typeNode extends AbstractNode {
+   
+     private String n;
+   
+     public typeNode(String m) {
+       this.n = m;
+     }
+   
+     public String getName() { return n; }
+   
    }
 
    /*  Factory methods to make nodes 
@@ -206,8 +224,11 @@ action code {:
    public methodNode makeNodeMethod(String mod, String type, String list) { return new methodNode(mod, type, list); }
    public paramNode makeNodeParam(String type, name n) { return new paramNode(type, n); }
    public spcl makeNodeSpcl(Integer name, AbstractNode node) { return new spcl(name, node); }
-   public decOrClass makeNodeDual(name n, classDlcNode c) { return new decOrClass(n, c); }
+   public decOrClass makeNodeDual(typeNode n, classDlcNode c) { return new decOrClass(n, c); }
    public modNode makeNodeMod(String n, Integer i, Integer w) { return new modNode(n, i, w); }
+   public IntegerNode makeNodeInt(Integer i) { return new IntegerNode(i); }
+   public typeNode makeNodeType(String s) { return new typeNode(s); }
+   
 :};
 
 /*
@@ -247,8 +268,8 @@ terminal  Integer  INTNUMBER;
  */
 
 non terminal   AbstractNode     CompilationUnit;
-non terminal   name     		FieldVariableDeclaration;
-non terminal   name			    MethodDeclaration;
+non terminal   typeNode     	FieldVariableDeclaration;
+non terminal   typeNode			MethodDeclaration;
 non terminal   paramNode		MethodDeclarator;
 non terminal   name		     	ParameterList,  Parameter;
 non terminal   AbstractNode     MethodBody, ConstructorDeclaration;
@@ -279,7 +300,7 @@ non terminal   AbstractNode     ReturnStatement;
 
 non terminal   String           Identifier;
 non terminal   name     		Literal;
-non terminal   AbstractNode     Number;
+non terminal   IntegerNode      Number;
 non terminal   name		    	DeclaratorName; 
 non terminal   name     		FieldVariableDeclaratorName; 
 non terminal   name		    	MethodDeclaratorName; 
@@ -293,9 +314,9 @@ non terminal   spcl     		FieldDeclarations;
 non terminal   spcl     		FieldDeclaration;
 non terminal   name 	     	FieldVariableDeclarators;
 non terminal   AbstractNode     LocalVariableDeclarators;
-non terminal   name     		QualifiedName; 
-non terminal   name	        	TypeName, TypeSpecifier;
-non terminal   name    			PrimitiveType;
+non terminal   typeNode     	QualifiedName; 
+non terminal   typeNode	        TypeName, TypeSpecifier;
+non terminal   typeNode    		PrimitiveType;
 
 //Precedence fix to solve SHift-Reduce conflict
 precedence left LPAREN, RPAREN;
@@ -399,11 +420,11 @@ Modifiers
  */
 PrimitiveType
         ::=	BOOLEAN:tok
-        {:RESULT= makeNodeString("Z");:}
+        {:RESULT= makeNodeType("Z");:}
         | 	INT:tok
-        {:RESULT= makeNodeString("I");:}
+        {:RESULT= makeNodeType("I");:}
         | 	VOID:tok
-        {:RESULT= makeNodeString("V");:}
+        {:RESULT= makeNodeType("V");:}
         ;
 
 /*
@@ -412,9 +433,9 @@ PrimitiveType
  */
 QualifiedName
         ::= Identifier:id
-        {:RESULT= makeNodeString(id);:}
+        {:RESULT= makeNodeType(id);:}
         |   QualifiedName:qn PERIOD Identifier:id
-        {:RESULT= makeNodeString(qn+"."+id);:}
+        {:RESULT= makeNodeType(qn+"."+id);:}
         ;
 
 /*
@@ -846,7 +867,7 @@ ComplexPrimaryNoParenthesis
 	::= Literal:rhs
 	{:RESULT= rhs;:}
 	|   Number:rhs
-	{:RESULT= rhs;:}
+	{:RESULT= makeNodeString(rhs.getName());:}
 	|   FieldAccess:f
 	{:RESULT= f;:}
 	|   MethodCall:m
@@ -878,7 +899,7 @@ MethodReference
 	::= ComplexPrimaryNoParenthesis:cp
 	{:RESULT= (name) cp;:}
 	|   QualifiedName:q
-	{:RESULT= (name) q;:}
+	{:RESULT= makeNodeString(q.getName());:}
 	|   SpecialName:sn
 	{:RESULT= (name) sn;:}
 	;
@@ -1186,5 +1207,5 @@ Literal
 
 Number
 	::= INTNUMBER:n
-	{: RESULT = makeNodeString("Int "+ n.toString()); :}
+	{: RESULT = makeNodeInt(n); :}
 	;
