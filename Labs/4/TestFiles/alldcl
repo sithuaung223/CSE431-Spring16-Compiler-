@@ -1,0 +1,17 @@
+public class test {
+  public void foo() {
+    int x;
+       x;
+    int y;
+       x=y+x-x;
+    { int x;
+          x=y;
+          y=x+3;
+    }
+    x;
+  }
+  
+  public void foo() {
+  
+  }
+}

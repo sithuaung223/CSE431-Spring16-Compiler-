@@ -1,0 +1,12 @@
+public class test {
+  public void foo() {
+       x;
+    int y;
+       y;
+    { int x;
+          x;
+          y;
+    }
+    x;
+  }
+}
