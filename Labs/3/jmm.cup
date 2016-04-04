@@ -12,8 +12,8 @@
  * and name 'temporaryNode' type ones to hold "titles"
  * 
  * Special nodes were made in some cases where extra information, besides this "title" were needed, 
- * for example Class Declaration nodes, which have properties of modifiers and types. We also created Type, method, param, int, field,
- * and a few more new node types.
+ * for example Class Declaration nodes, which have properties of modifiers and types. We also created method, param, field,
+ * and more new node types.
  *
  * Precedence rule fix is after non terminal declarations
  *
@@ -160,15 +160,15 @@ action code {:
    
    class decOrClass extends AbstractNode {
    
-     private typeNode name_node;
+     private name name_node;
      private classDlcNode cla;
    
-     public decOrClass(typeNode n, classDlcNode c) {
+     public decOrClass(name n, classDlcNode c) {
        this.name_node = n;
        this.cla = c;
      }
    
-     public typeNode getName3() { return name_node; }
+     public name getName3() { return name_node; }
      public classDlcNode getN2() { return cla; }
    
    }
@@ -194,19 +194,7 @@ action code {:
    class IntegerNode extends AbstractNode {
       private Integer val;
       public IntegerNode(Integer val) { this.val = val; }
-      public String getName() { return "Int " + val; }
-   }
-   
-   class typeNode extends AbstractNode {
-   
-     private String n;
-   
-     public typeNode(String m) {
-       this.n = m;
-     }
-   
-     public String getName() { return n; }
-   
+      public String getName() { return "Integer " + val; }
    }
 
    /*  Factory methods to make nodes 
@@ -224,11 +212,8 @@ action code {:
    public methodNode makeNodeMethod(String mod, String type, String list) { return new methodNode(mod, type, list); }
    public paramNode makeNodeParam(String type, name n) { return new paramNode(type, n); }
    public spcl makeNodeSpcl(Integer name, AbstractNode node) { return new spcl(name, node); }
-   public decOrClass makeNodeDual(typeNode n, classDlcNode c) { return new decOrClass(n, c); }
+   public decOrClass makeNodeDual(name n, classDlcNode c) { return new decOrClass(n, c); }
    public modNode makeNodeMod(String n, Integer i, Integer w) { return new modNode(n, i, w); }
-   public IntegerNode makeNodeInt(Integer i) { return new IntegerNode(i); }
-   public typeNode makeNodeType(String s) { return new typeNode(s); }
-   
 :};
 
 /*
@@ -268,8 +253,8 @@ terminal  Integer  INTNUMBER;
  */
 
 non terminal   AbstractNode     CompilationUnit;
-non terminal   typeNode     	FieldVariableDeclaration;
-non terminal   typeNode			MethodDeclaration;
+non terminal   name     		FieldVariableDeclaration;
+non terminal   name			    MethodDeclaration;
 non terminal   paramNode		MethodDeclarator;
 non terminal   name		     	ParameterList,  Parameter;
 non terminal   AbstractNode     MethodBody, ConstructorDeclaration;
@@ -300,7 +285,7 @@ non terminal   AbstractNode     ReturnStatement;
 
 non terminal   String           Identifier;
 non terminal   name     		Literal;
-non terminal   IntegerNode      Number;
+non terminal   AbstractNode     Number;
 non terminal   name		    	DeclaratorName; 
 non terminal   name     		FieldVariableDeclaratorName; 
 non terminal   name		    	MethodDeclaratorName; 
@@ -314,9 +299,9 @@ non terminal   spcl     		FieldDeclarations;
 non terminal   spcl     		FieldDeclaration;
 non terminal   name 	     	FieldVariableDeclarators;
 non terminal   AbstractNode     LocalVariableDeclarators;
-non terminal   typeNode     	QualifiedName; 
-non terminal   typeNode	        TypeName, TypeSpecifier;
-non terminal   typeNode    		PrimitiveType;
+non terminal   name     		QualifiedName; 
+non terminal   name	        	TypeName, TypeSpecifier;
+non terminal   name    			PrimitiveType;
 
 //Precedence fix to solve SHift-Reduce conflict
 precedence left LPAREN, RPAREN;
@@ -420,11 +405,11 @@ Modifiers
  */
 PrimitiveType
         ::=	BOOLEAN:tok
-        {:RESULT= makeNodeType("Z");:}
+        {:RESULT= makeNodeString("Z");:}
         | 	INT:tok
-        {:RESULT= makeNodeType("I");:}
+        {:RESULT= makeNodeString("I");:}
         | 	VOID:tok
-        {:RESULT= makeNodeType("V");:}
+        {:RESULT= makeNodeString("V");:}
         ;
 
 /*
@@ -433,9 +418,9 @@ PrimitiveType
  */
 QualifiedName
         ::= Identifier:id
-        {:RESULT= makeNodeType(id);:}
+        {:RESULT= makeNodeString(id);:}
         |   QualifiedName:qn PERIOD Identifier:id
-        {:RESULT= makeNodeType(qn+"."+id);:}
+        {:RESULT= makeNodeString(qn+"."+id);:}
         ;
 
 /*
@@ -759,7 +744,8 @@ LocalVariableDeclarators
 	;
 
 Statement
-	::= EmptyStatement
+	::= EmptyStatement:es
+	{:RESULT=es;:}
 	|   ExpressionStatement:rhs SEMICOLON
 	{:RESULT=rhs;:}
         |   SelectionStatement:ss
@@ -774,6 +760,7 @@ Statement
 
 EmptyStatement
 	::= SEMICOLON
+	{:RESULT=(AbstractNode) makeNodeString("empty");:}
         ;
 
 ExpressionStatement
@@ -821,7 +808,7 @@ IterationStatement
 ReturnStatement
 	::= RETURN Expression:e SEMICOLON
 	{:
-		name a= makeNodeString("Return");
+		name a= makeNodeString("op Return");
 		a.adoptChildren(e);
 		RESULT=a;
 	:}
@@ -867,7 +854,7 @@ ComplexPrimaryNoParenthesis
 	::= Literal:rhs
 	{:RESULT= rhs;:}
 	|   Number:rhs
-	{:RESULT= makeNodeString(rhs.getName());:}
+	{:RESULT= rhs;:}
 	|   FieldAccess:f
 	{:RESULT= f;:}
 	|   MethodCall:m
@@ -899,7 +886,7 @@ MethodReference
 	::= ComplexPrimaryNoParenthesis:cp
 	{:RESULT= (name) cp;:}
 	|   QualifiedName:q
-	{:RESULT= makeNodeString(q.getName());:}
+	{:RESULT= (name) q;:}
 	|   SpecialName:sn
 	{:RESULT= (name) sn;:}
 	;
@@ -1207,5 +1194,5 @@ Literal
 
 Number
 	::= INTNUMBER:n
-	{: RESULT = makeNodeInt(n); :}
+	{: RESULT = makeNodeString("Int "+ n.toString()); :}
 	;
