@@ -49,8 +49,9 @@ public class SymtabVisitor extends NodeVisitor {
    }
    
    /*
-    * increase scope +1
-    * decrease scope -1
+    * Increase scope +1
+    * Visit children
+    * Decrease scope -1
     */
    public void visit(BlockIsh b) {
 	   sti.incrNestLevel();
@@ -60,12 +61,12 @@ public class SymtabVisitor extends NodeVisitor {
    }
    
    /*
-    * check if d in symbol table - fail if it is in there
-    * insert d into symbol table
-    * pass visitor on to d's children
+    * Check if d in symbol table - fail if it is in there
+    * Insert d into symbol table
+    * Pass visitor on to d's children
     */
    public void visit(ClassDeclaring d) {
-	   if(sti.lookup(d.getName()) != null ){
+	   if(sti.lookup(d.getName()) != null && (((typeVisitor) sti.lookup(d.getName())).getScopeLevel() == sti.getCurrentNestLevel())){
 		   sti.err((AbstractNode) d, "Duplicate Declaration");
 	   }else{
 		   AbstractNode n = (AbstractNode) d;
@@ -76,8 +77,8 @@ public class SymtabVisitor extends NodeVisitor {
    }
    
    /*
-    * check if f in symbol table - fail if it is in there - append this
-    * insert f into symbol table - append this
+    * Check if f in symbol table - fail if it is in there - append this
+    * Insert f into symbol table - append this
     */
    public void visit(FieldDeclaring f) {
 	   if(sti.lookup("this." +f.getName()) != null){
@@ -90,8 +91,8 @@ public class SymtabVisitor extends NodeVisitor {
    }
    
    /*
-    * check if l in symbol table - fail if it is in there
-    * insert l into symbol table
+    * Check if l in symbol table - fail if it is in there
+    * Insert l into symbol table
     */
    public void visit(LocalDeclaring l) {
 	   if(sti.lookup(l.getName()) != null && (((typeVisitor) sti.lookup(l.getName())).getScopeLevel() == sti.getCurrentNestLevel())){
@@ -105,7 +106,7 @@ public class SymtabVisitor extends NodeVisitor {
    }
    
    /*
-    * check if r in symbol table - fail if it is not in there
+    * Check if r in symbol table - fail if it is not in there
     */
    public void visit(LocalReferencing r) {
 	   if(sti.lookup(r.getId()) == null){
@@ -124,10 +125,10 @@ public class SymtabVisitor extends NodeVisitor {
    }
    
    /*
-    * check if m in symbol table - fail if signature is in there
-    * insert m into symbol table
-    * pass visitor on to parameters (scope = m+1)
-    * method body = block node
+    * Check if m in symbol table - fail if signature is in there
+    * Insert m into symbol table
+    * Pass visitor on to parameters (scope = m+1)
+    * Method body = block node
     */
    public void visit(MethodDeclaring m) {
 	   if(sti.lookup(m.getName()) != null && (((typeVisitor) sti.lookup(m.getName())).getScopeLevel() == sti.getCurrentNestLevel())){
@@ -138,7 +139,9 @@ public class SymtabVisitor extends NodeVisitor {
 		   sti.enter(m.getName(), tv);
 		   sti.incrNestLevel();
 		   visitChildren(m.getParams());
+		   sti.incrNestLevel();
 		   visitChildren(m.getBody());
+		   sti.decrNestLevel();
 		   
 	   }
    }
