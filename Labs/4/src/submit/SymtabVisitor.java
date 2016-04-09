@@ -1,4 +1,16 @@
+/**
+ * CSE 431 Lab4
+ * 
+ * Evan Schwartzman
+ * Si Thu Aung
+ * 
+ * Used the course symbol table, course parser
+ * 
+ */
+
+
 package submit;
+
 import autogen.Parser;
 import autogen.Yylex;
 import common.OpenFile;
@@ -23,7 +35,6 @@ public class SymtabVisitor extends NodeVisitor {
      *      return new SymtabVisitor(new BuildSymtab());
      *      This will use your visitor and your symbol table implementation
      */
-   //return new CourseSymtabVisitor(new CourseBuildSymtab());
    public static ReflectiveVisitor getVisitor() { 
       return new SymtabVisitor(new CourseBuildSymtab());
    }
@@ -48,10 +59,10 @@ public class SymtabVisitor extends NodeVisitor {
       sti.out((AbstractNode)o, "hello");
    }
    
-   /*
-    * Increase scope +1
-    * Visit children
-    * Decrease scope -1
+   /**
+    * 1. Increase scope +1
+    * 2. Visit children
+    * 3. Decrease scope -1
     */
    public void visit(BlockIsh b) {
 	   sti.incrNestLevel();
@@ -60,85 +71,89 @@ public class SymtabVisitor extends NodeVisitor {
 	   sti.decrNestLevel();
    }
    
-   /*
-    * Check if d in symbol table - fail if it is in there
-    * Insert d into symbol table
-    * Pass visitor on to d's children
+   /**
+    * 1. Check if d is in symbol table - fail if it is in there
+    * 2. Insert d into symbol table
+    * 3. Pass visitor on to d's children
     */
    public void visit(ClassDeclaring d) {
-	   if(sti.lookup(d.getName()) != null && (((typeVisitor) sti.lookup(d.getName())).getScopeLevel() == sti.getCurrentNestLevel())){
-		   sti.err((AbstractNode) d, "Duplicate Declaration");
+	   if(sti.lookup(d.getName()) != null && (((symbolInfo) sti.lookup(d.getName())).getScopeLevel() == sti.getCurrentNestLevel())){
+		   sti.err((AbstractNode) d, "Duplicate Class Declaration!");
 	   }else{
 		   AbstractNode n = (AbstractNode) d;
-		   typeVisitor tv = new typeVisitor(n, null, d.getMods(), sti.getCurrentNestLevel());
-		   sti.enter(d.getName(), tv);
+		   symbolInfo info = new symbolInfo(n, null, d.getMods(), sti.getCurrentNestLevel());
+		   sti.enter(d.getName(), info);
 		   visitChildren(n);
 	   }
    }
    
-   /*
-    * Check if f in symbol table - fail if it is in there - append this
-    * Insert f into symbol table - append this
+   /**
+    * 1. Check if f is in symbol table - fail if it is in there
+    * 2. Insert f into symbol table (append this)
     */
    public void visit(FieldDeclaring f) {
 	   if(sti.lookup("this." +f.getName()) != null){
-		   sti.err((AbstractNode) f, "Duplicate Declaration");
+		   sti.err((AbstractNode) f, "Duplicate Field Declaration!");
 	   }else{
 		   AbstractNode n = (AbstractNode) f;
-		   typeVisitor tv = new typeVisitor(n, f.getType(), f.getMods(), sti.getCurrentNestLevel());
-		   sti.enter("this." +f.getName(), tv);
+		   symbolInfo info = new symbolInfo(n, f.getType(), f.getMods(), sti.getCurrentNestLevel());
+		   sti.enter("this." +f.getName(), info);
 	   }
    }
    
-   /*
-    * Check if l in symbol table - fail if it is in there
-    * Insert l into symbol table
+   /**
+    * 1. Check if l is in symbol table - fail if it is in there
+    * 2. Insert l into symbol table
+    * 3. Decorate Tree
     */
    public void visit(LocalDeclaring l) {
-	   if(sti.lookup(l.getName()) != null && (((typeVisitor) sti.lookup(l.getName())).getScopeLevel() == sti.getCurrentNestLevel())){
-		   sti.err((AbstractNode) l, "Duplicate Declaration");
+	   if(sti.lookup(l.getName()) != null && (((symbolInfo) sti.lookup(l.getName())).getScopeLevel() == sti.getCurrentNestLevel())){
+		   sti.err((AbstractNode) l, "Duplicate Local Declaration");
 	   }else{
 		   AbstractNode n = (AbstractNode) l;
-		   typeVisitor tv = new typeVisitor(n, l.getType(), null, sti.getCurrentNestLevel());
-		   sti.enter(l.getName(), tv);
-		   l.setSymInfo(tv);
+		   symbolInfo info = new symbolInfo(n, l.getType(), null, sti.getCurrentNestLevel());
+		   sti.enter(l.getName(), info);
+		   l.setSymInfo(info);
 	   }
    }
    
-   /*
-    * Check if r in symbol table - fail if it is not in there
+   /**
+    * 1. Check if r is in symbol table - fail if it is not in there
+    * 2. Decorate Tree
     */
    public void visit(LocalReferencing r) {
 	   if(sti.lookup(r.getId()) == null){
 		   if(sti.lookup("this."+r.getId()) == null){
 			   sti.err((AbstractNode) r, "Undefined Reference");
 		   }else{
-			  SymInfo i = sti.lookup("this."+r.getId());
-			  r.setSymInfo(i);
+			  SymInfo info = sti.lookup("this."+r.getId());
+			  r.setSymInfo(info);
 		   }
 	   }else{
-		   SymInfo i = sti.lookup(r.getId());
-		   r.setSymInfo(i);
+		   SymInfo info = sti.lookup(r.getId());
+		   r.setSymInfo(info);
 		   
 	   }
 		  		   
    }
    
-   /*
-    * Check if m in symbol table - fail if signature is in there
-    * Insert m into symbol table
-    * Pass visitor on to parameters (scope = m+1)
-    * Method body = block node
+   /**
+    * 1. Check if m is in symbol table - fail if it is in there
+    * 2. Insert m into symbol table
+    * 3. Pass visitor on to parameters (scope should be incremented by 1)
+    * 4. Pass visitor on to method body (treat as a block concerning scope)
     */
    public void visit(MethodDeclaring m) {
-	   if(sti.lookup(m.getName()) != null && (((typeVisitor) sti.lookup(m.getName())).getScopeLevel() == sti.getCurrentNestLevel())){
-		   sti.err((AbstractNode) m, "Duplicate Declaration");
+	   if(sti.lookup(m.getName()) != null){
+		   sti.err((AbstractNode) m, "Duplicate Method Declaration");
 	   }else{
 		   AbstractNode n = (AbstractNode) m;
-		   typeVisitor tv = new typeVisitor(n, m.getType(), null, sti.getCurrentNestLevel());
+		   symbolInfo tv = new symbolInfo(n, m.getType(), null, sti.getCurrentNestLevel());
 		   sti.enter(m.getName(), tv);
+		   
 		   sti.incrNestLevel();
 		   visitChildren(m.getParams());
+		   
 		   sti.incrNestLevel();
 		   visitChildren(m.getBody());
 		   sti.decrNestLevel();
@@ -147,14 +162,21 @@ public class SymtabVisitor extends NodeVisitor {
    }
    
 }
-
-   class typeVisitor implements SymInfo{
+   /**
+    * 
+    * symbolInfo implements the SymInfo object
+    * 
+    * added a getScopeLevel method to return current scope
+    * added a toString method
+    *
+    */
+   class symbolInfo implements SymInfo{
 		   public AbstractNode node;
 		   public TypeAttrs type;
 		   public ModsAttrs mods;
 		   public int scope;
 		   
-		public typeVisitor(AbstractNode n, TypeAttrs t, ModsAttrs m, int s ){
+		public symbolInfo(AbstractNode n, TypeAttrs t, ModsAttrs m, int s ){
 			this.node = n;
 			this.type = t;
 			this.mods = m;
@@ -188,7 +210,7 @@ public class SymtabVisitor extends NodeVisitor {
 		}
 		
 		public String toString(){
-			return (" "+node + ": type " + type + " mods " + mods );
+			return (node.getNodeNum() + ": type " + type + " mods " + mods + " reg -1" );
 		}
 	
 		public int getScopeLevel(){
@@ -200,9 +222,9 @@ public class SymtabVisitor extends NodeVisitor {
    /** OPTIONAL (or from Studio if you want): Your symbol table implementation */
    class BuildSymtab extends Symtab implements SymtabInterface {
 
-      public void incrNestLevel() { out("Nest level now " + getCurrentNestLevel()); }
-      public void decrNestLevel() { out("Nest level now " + getCurrentNestLevel()); }
-      public int getCurrentNestLevel() { return 0; }
-      public SymInfo lookup(String id) { return  null; }
-      public void enter(String id, SymInfo s) { }
-   }
+	      public void incrNestLevel() { out("Nest level now " + getCurrentNestLevel()); }
+	      public void decrNestLevel() { out("Nest level now " + getCurrentNestLevel()); }
+	      public int getCurrentNestLevel() { return 0; }
+	      public SymInfo lookup(String id) { return  null; }
+	      public void enter(String id, SymInfo s) { }
+	   }
