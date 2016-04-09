@@ -77,7 +77,7 @@ public class SymtabVisitor extends NodeVisitor {
     * 3. Pass visitor on to d's children
     */
    public void visit(ClassDeclaring d) {
-	   if(sti.lookup(d.getName()) != null && (((symbolInfo) sti.lookup(d.getName())).getScopeLevel() == sti.getCurrentNestLevel())){
+	   if(sti.lookup(d.getName()) != null ){
 		   sti.err((AbstractNode) d, "Duplicate Class Declaration!");
 	   }else{
 		   AbstractNode n = (AbstractNode) d;
