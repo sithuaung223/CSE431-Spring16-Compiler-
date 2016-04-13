@@ -31,6 +31,8 @@
  * 4. We also added a place to put the scope of a variable in our symbol object so that two local declarations with the same name but different scopes would not fail
  * 
  * 5. We do not handle method overriding or overloading, as discussed in lecture/instructions
+ * 
+ * 6. If there is a local declaration inside of a method with the same name as the method param, this counts as a duplicate local declaration (this is what java does).
  */
 
 
@@ -170,7 +172,7 @@ public class SymtabVisitor extends NodeVisitor {
     * 1. Check if m is in symbol table - fail if it is in there (unless in different class)
     * 2. Insert m into symbol table
     * 3. Pass visitor on to parameters (scope should be incremented by 1)
-    * 4. Pass visitor on to method body (concerning scope, treat as a block)
+    * 4. Pass visitor on to method body (concerning scope, treat as a block, +1 from above, -1 afterwards)
     */
    public void visit(MethodDeclaring m) {
 	   AbstractNode n = (AbstractNode) m;
@@ -186,8 +188,6 @@ public class SymtabVisitor extends NodeVisitor {
 		   
 		   sti.incrNestLevel();
 		   visitChildren(m.getParams());
-		   
-		   sti.incrNestLevel();
 		   visitChildren(m.getBody());
 		   sti.decrNestLevel();
 		   
