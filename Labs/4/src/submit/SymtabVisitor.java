@@ -183,7 +183,7 @@ public class SymtabVisitor extends NodeVisitor {
 	   if(sti.lookup(m.getName()) != null && (className == ((symbolInfo) sti.lookup(m.getName())).checkClass())){
 		   sti.err((AbstractNode) m, "Duplicate Method Declaration");
 	   }else{
-		   symbolInfo info = new symbolInfo(n, m.getType(), null, sti.getCurrentNestLevel(), className);
+		   symbolInfo info = new symbolInfo(n, m.getType(), m.getMods(), sti.getCurrentNestLevel(), className);
 		   sti.enter(m.getName(), info);
 		   
 		   sti.incrNestLevel();
