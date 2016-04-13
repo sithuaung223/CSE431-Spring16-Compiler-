@@ -7,7 +7,7 @@
  * We used the course symbol table and the course parser
  * 
  * A few notes:
- * Our implementation made a few different design decisions than the reference.
+ * Our implementation made a few different design decisions than the reference:
  * 
  * 1. We think these were bugs that the reference didn't do this, but ours throws an error if the same method or class is declared in the same scope
  * 
@@ -16,12 +16,21 @@
  *    Also to facilitate this, we use the fact that in the parser, with f being the field node, 
  *    f.getParent().getParent().getParent().getParent().toString() will always equal the class node, because of how the parser is structured,
  *    and also with this parser, the fourth word of f.getParent().getParent().getParent().getParent().toString() will always be the class name.
- *    We use all of this information to do the comparisons when a field with the same name is declared in two different classes (shouldn't fail because each class is its own "table")
+ *    We use all of this information to do the comparisons when a field with the same name is declared in two different classes (shouldn't fail)
+ *    However, if multiple fields are declared in the same class with the same name, this should (and does) fail
  *    
  *    We do something almost identical to handle methods in different classes with the same name...
+ *    Since we only had one symbol table for all classes, above was just a way to try to remedy some problems, but this obstacle was impossible to
+ *    overcome in certain instances (see below)
  *    
- * 3. We also added a place to put the scope of a variable in our symbol object so that two local declarations with the same name but different scopes would not fail
+ * 3. Because there was only one symbol table in this lab (as opposed to one for each class) there were some things that we could
+ *    not do, such as having references only work with the fields of the class it is in specifically,
+ *    but we asked Professor Shook about this and he told us not to worry about these types of edge cases as having multiple classes is not supposed to behave as expected in this lab. 
+ *    For all relevant edge cases (and especially within a single class, which for this lab was the main goal, everything works).
+ *    
+ * 4. We also added a place to put the scope of a variable in our symbol object so that two local declarations with the same name but different scopes would not fail
  * 
+ * 5. We do not handle method overriding or overloading, as discussed in lecture/instructions
  */
 
 
