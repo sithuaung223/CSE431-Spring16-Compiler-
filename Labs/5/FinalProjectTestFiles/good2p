@@ -1,0 +1,23 @@
+public class good2p {
+
+   public static void outInt(int n) {
+     java.io.PrintStream ps;
+     ps = java.lang.System::out : java.io.PrintStream;
+     (ps)->print : void (n);
+   }
+
+   /* Expressions from our hw2 test file */
+   public static void main431() {
+     int w,x;
+     x = 500 + (4 - 73);
+       TestClasses.good2p::outInt : void (x);
+     x = 30 + (4 - 5)  + (200 + 202);
+       TestClasses.good2p::outInt : void (x);
+     x = 10 + 20 + 30 + 40 + 50 + 60 + 70 + 80 + 71;
+       TestClasses.good2p::outInt : void (x);
+     x = 7 * 11 * 13 * 431;
+       TestClasses.good2p::outInt : void (x);
+     x = (- ((- 70) + (- 1) + ((((1 + 1) + 1)) *  (2 * (- (3 * (4 * 5))))) ));
+       TestClasses.good2p::outInt : void (x);
+   }
+}

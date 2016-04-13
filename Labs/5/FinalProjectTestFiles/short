@@ -1,0 +1,49 @@
+/* Tests short and and or */
+public class short {
+
+   public static void outStr(java.lang.String s) {
+     java.io.PrintStream ps;
+     ps = java.lang.System::out : java.io.PrintStream;
+     (ps)->print : void (s);
+   }
+   public static void outStrln(java.lang.String s) {
+     java.io.PrintStream ps;
+     ps = java.lang.System::out : java.io.PrintStream;
+     (ps)->println : void (s);
+   }
+   public static void outInt(int n) {
+     java.io.PrintStream ps;
+     ps = java.lang.System::out : java.io.PrintStream;
+     (ps)->print : void (n);
+   }
+
+   public static boolean youBlewShortOr() {
+      TestClasses.short::outStr : void (
+        "You chose unwisely, evaluating the second child of a short-or ");
+      TestClasses.short::outStrln : void (
+        "whose first child was true");
+      java.lang.System::exit : void (-1);
+      return true;
+   }
+
+   public static void gotit() {
+      TestClasses.short::outStrln : void ("Check passed");
+   }
+      
+   public static void youBlewAns() {
+      TestClasses.short::outStrln : void ("Check failed for short or");
+   }
+      
+
+   public static void main431() {
+      boolean atrue, btrue, cfalse, dfalse;
+      atrue = 3 < 4;
+      btrue = atrue && 4 < 5;
+      cfalse = 431 > 422;
+      dfalse = 431 > 101;
+      if (atrue || TestClasses.short::youBlewShortOr : boolean ()) 
+         TestClasses.short:: gotit : void ();
+      else 
+         TestClasses.short::youBlewAns : void ();
+   }
+}

@@ -1,0 +1,91 @@
+
+      1: public /* Using Class-Supplied Parser */ 
+ class good1 {
+      2: 
+      3:    public static void main431() {
+      4:      int w,x;
+      5:      x = 3+4;
+      6:      x = 5*7; 
+      7:    }
+      8: }
+      9: 
+Raw AST (with node numbers)
+25: TemporaryNode[NodeDumpable]  "Program"
+  24: ClassNode[ASTNodeIsh, NodeDumpable, SymDeclaring, ClassDeclaring]  "Class public instance good1"
+    23: ClassBody[ASTNodeIsh, ClassIsh, NodeDumpable]  "Class Body"
+      18: TemporaryNode[NodeDumpable]  "Fields"
+      19: TemporaryNode[NodeDumpable]  "Constructors"
+      20: TemporaryNode[NodeDumpable]  "Methods"
+        17: ModTypeNode[NodeDumpable]  "V"
+          2: MethodNode[ASTNodeIsh, NodeDumpable, SymDeclaring, MethodDeclaring]  "public static V main431"
+            1: ParamsNode[ASTNodeIsh, NodeDumpable, ParamIsh]  "PARAMS"
+            16: BlockNode[ASTNodeIsh, NodeDumpable, BlockIsh]  "BLOCK"
+              5: TypeNode[NodeDumpable]  "I"
+                3: LocalNode[ASTNodeIsh, NodeDumpable, SymDeclaring, LocalDeclaring]  "Local I w"
+                4: LocalNode[ASTNodeIsh, NodeDumpable, SymDeclaring, LocalDeclaring]  "Local I x"
+              10: AssignNode[AssignIsh, NodeDumpable, AssignTypeRequiring]  "Assign"
+                6: RefNode[LocalReferencing, Referencing, NodeDumpable]  "Local Ref x"
+                9: AddNode[ComputeIsh, NodeDumpable, BinaryComputeIsh]  ""
+                  7: IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 3"
+                  8: IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 4"
+              15: AssignNode[AssignIsh, NodeDumpable, AssignTypeRequiring]  "Assign"
+                11: RefNode[LocalReferencing, Referencing, NodeDumpable]  "Local Ref x"
+                14: MpyNode[ComputeIsh, NodeDumpable, BinaryComputeIsh]  ""
+                  12: IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 5"
+                  13: IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 7"
+      21: TemporaryNode[NodeDumpable]  "Statics"
+      22: TemporaryNode[NodeDumpable]  "Inner Classes"
+Building Symbol table
+Type Setting pass
+
+Raw AST (with node numbers)
+25: TemporaryNode[NodeDumpable]  "Program"
+  24: ClassNode[ASTNodeIsh, NodeDumpable, SymDeclaring, ClassDeclaring]  "Class public instance good1"
+    23: ClassBody[ASTNodeIsh, ClassIsh, NodeDumpable]  "Class Body"
+      18: TemporaryNode[NodeDumpable]  "Fields"
+      19: TemporaryNode[NodeDumpable]  "Constructors"
+      20: TemporaryNode[NodeDumpable]  "Methods"
+        17: ModTypeNode[NodeDumpable]  "V"
+          2: MethodNode[ASTNodeIsh, NodeDumpable, SymDeclaring, MethodDeclaring]  "public static V main431"
+            1: ParamsNode[ASTNodeIsh, NodeDumpable, ParamIsh]  "PARAMS"
+            16: BlockNode[ASTNodeIsh, NodeDumpable, BlockIsh]  "BLOCK"
+              5: TypeNode[NodeDumpable]  "I"
+                3: LocalNode[ASTNodeIsh, NodeDumpable, SymDeclaring, LocalDeclaring]  "Local I w"
+                4: LocalNode[ASTNodeIsh, NodeDumpable, SymDeclaring, LocalDeclaring]  "Local I x"
+              10: <I> AssignNode[AssignIsh, NodeDumpable, AssignTypeRequiring]  "Assign"
+                6: <I> RefNode[LocalReferencing, Referencing, NodeDumpable]  "Local Ref x4: type I mods null reg -1"
+                9: <I> AddNode[ComputeIsh, NodeDumpable, BinaryComputeIsh]  ""
+                  7: <I> IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 3"
+                  8: <I> IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 4"
+              15: <I> AssignNode[AssignIsh, NodeDumpable, AssignTypeRequiring]  "Assign"
+                11: <I> RefNode[LocalReferencing, Referencing, NodeDumpable]  "Local Ref x4: type I mods null reg -1"
+                14: <I> MpyNode[ComputeIsh, NodeDumpable, BinaryComputeIsh]  ""
+                  12: <I> IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 5"
+                  13: <I> IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 7"
+      21: TemporaryNode[NodeDumpable]  "Statics"
+      22: TemporaryNode[NodeDumpable]  "Inner Classes"
+Code Generation
+Ignoring 25: TemporaryNode[NodeDumpable]  "Program"
+    Ignoring 23: ClassBody[ASTNodeIsh, ClassIsh, NodeDumpable]  "Class Body"
+      Ignoring 18: TemporaryNode[NodeDumpable]  "Fields"
+      Ignoring 19: TemporaryNode[NodeDumpable]  "Constructors"
+      Ignoring 20: TemporaryNode[NodeDumpable]  "Methods"
+        Ignoring 17: ModTypeNode[NodeDumpable]  "V"
+          Ignoring 2: MethodNode[ASTNodeIsh, NodeDumpable, SymDeclaring, MethodDeclaring]  "public static V main431"
+            Ignoring 1: ParamsNode[ASTNodeIsh, NodeDumpable, ParamIsh]  "PARAMS"
+            Ignoring 16: BlockNode[ASTNodeIsh, NodeDumpable, BlockIsh]  "BLOCK"
+              Ignoring 5: TypeNode[NodeDumpable]  "I"
+                Ignoring 3: LocalNode[ASTNodeIsh, NodeDumpable, SymDeclaring, LocalDeclaring]  "Local I w"
+                Ignoring 4: LocalNode[ASTNodeIsh, NodeDumpable, SymDeclaring, LocalDeclaring]  "Local I x"
+              Ignoring 10: <I> AssignNode[AssignIsh, NodeDumpable, AssignTypeRequiring]  "Assign"
+                Ignoring 6: <I> RefNode[LocalReferencing, Referencing, NodeDumpable]  "Local Ref x4: type I mods null reg -1"
+                Ignoring 9: <I> AddNode[ComputeIsh, NodeDumpable, BinaryComputeIsh]  ""
+                  Ignoring 7: <I> IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 3"
+                  Ignoring 8: <I> IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 4"
+              Ignoring 15: <I> AssignNode[AssignIsh, NodeDumpable, AssignTypeRequiring]  "Assign"
+                Ignoring 11: <I> RefNode[LocalReferencing, Referencing, NodeDumpable]  "Local Ref x4: type I mods null reg -1"
+                Ignoring 14: <I> MpyNode[ComputeIsh, NodeDumpable, BinaryComputeIsh]  ""
+                  Ignoring 12: <I> IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 5"
+                  Ignoring 13: <I> IntNode[ConstantProducing, ASTNodeIsh, ConstantInt, IntTypeProducing, NodeDumpable]  "Int 7"
+      Ignoring 21: TemporaryNode[NodeDumpable]  "Statics"
+      Ignoring 22: TemporaryNode[NodeDumpable]  "Inner Classes"

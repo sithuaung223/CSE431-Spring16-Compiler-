@@ -1,0 +1,8 @@
+public class good1 {
+
+   public static void main431() {
+     int w,x;
+     x = 3+4;
+     x = 5*7; 
+   }
+}
