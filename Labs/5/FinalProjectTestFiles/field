@@ -1,0 +1,45 @@
+/* Tests field accesses. NOTE: This file will not execute (since there is no Pub class available) but you should still be able to generate code for it and check the code manually. */
+public class field {
+
+   public static void outStr(java.lang.String s) {
+     java.io.PrintStream ps;
+     ps = java.lang.System::out : java.io.PrintStream;
+     (ps)->print : void (s);
+   }
+   public static void outStrln(java.lang.String s) {
+     java.io.PrintStream ps;
+     ps = java.lang.System::out : java.io.PrintStream;
+     (ps)->println : void (s);
+   }
+   public static void outInt(int n) {
+     java.io.PrintStream ps;
+     ps = java.lang.System::out : java.io.PrintStream;
+     (ps)->print : void (n);
+   }
+
+   public static void printPub(java.lang.String str, TestClasses.Pub p, int expectA, int expectB) {
+      TestClasses.field::outStr : void ("Value of ");
+      TestClasses.field::outStr : void (str);
+      TestClasses.field::outStr : void (" should be ");
+      TestClasses.field::outInt : void (expectA);
+      TestClasses.field::outStr : void (", ");
+      TestClasses.field::outInt : void (expectB);
+      TestClasses.field::outStr : void (" and is " );
+      TestClasses.field::outStrln : void ((p)-> toString : java.lang.String ());
+   }
+   public static void main431() {
+      TestClasses.Pub p1, p2, p3;
+      p1 = TestClasses.Pub :: genPub : TestClasses.Pub ();
+      p2 = TestClasses.Pub :: genPub : TestClasses.Pub ();
+      p3 = TestClasses.Pub :: genPub : TestClasses.Pub ();
+      TestClasses.field:: printPub : void ("p1", p1, 400, 31);
+      int looka, lookb;
+      looka = (p1)->a : int ;
+      lookb = (p2)->b : int ;
+      int diff;
+      diff = looka - lookb;
+      (p3)->a : int = diff;
+      (p3)->b : int = (p2)->a : int;
+      TestClasses.field::printPub : void ("p3", p3, 369, 400);
+   }
+}

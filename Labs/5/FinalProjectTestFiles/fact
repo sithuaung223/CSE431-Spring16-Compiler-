@@ -1,0 +1,44 @@
+/* Computes factorials:  tests method calls, if, while, assignment */
+public class fact {
+
+   public static void outStr(java.lang.String s) {
+     java.io.PrintStream ps;
+     ps = java.lang.System::out : java.io.PrintStream;
+     (ps)->print : void (s);
+   }
+   public static void outStrln(java.lang.String s) {
+     java.io.PrintStream ps;
+     ps = java.lang.System::out : java.io.PrintStream;
+     (ps)->println : void (s);
+   }
+   public static void outInt(int n) {
+     java.io.PrintStream ps;
+     ps = java.lang.System::out : java.io.PrintStream;
+     (ps)->print : void (n);
+   }
+
+   public static int computeFactorial(int x) {
+      TestClasses.fact::outStr : void ("Computing factorial of ");
+      TestClasses.fact::outInt : void (x);
+      int ans;
+      ans = TestClasses.fact::factorial : int (x);
+      TestClasses.fact::outStr : void (" is ");
+      TestClasses.fact::outInt : void (ans);
+      TestClasses.fact::outStrln : void ("");
+      return ans;
+   }
+   public static int factorial(int x) {
+      if (x==0) return 1;
+      else return x * TestClasses.fact::factorial : int (x-1);
+   }
+   public static void main431() {
+     int i;
+     i = 0;
+     TestClasses.fact::outStrln : void ("CS431 fact test");
+     while ( i < 10) {
+        int gobble;
+        gobble = TestClasses.fact::computeFactorial : int (i);
+        i = i + 1;
+     }
+   }
+}

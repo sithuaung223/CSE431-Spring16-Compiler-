@@ -1,0 +1,45 @@
+package autogen;
+//
+//  NOTE:  If you want to use your own parser, then replace this 
+//    with your lab7 jmm.cup
+//
+import lab7.*;
+import java_cup.runtime.*;
+
+terminal  Symbol   OP_GE, OP_LE, OP_EQ, OP_NE, OP_GT, OP_LT;
+terminal  Symbol   OP_LAND, OP_LOR;
+terminal  Symbol   INSTANCEOF;
+terminal  Symbol   HAT, TILDE;
+terminal  Symbol   BOOLEAN;
+terminal  Symbol   CLASS;
+terminal  Symbol   ELSE;
+terminal  Symbol   IF, INT;
+terminal  Symbol   NEW, NULL;
+terminal  Symbol   PRIVATE, PUBLIC;
+terminal  Symbol   RETURN;
+terminal  Symbol   STATIC, SUPER;
+terminal  Symbol   THIS;
+terminal  Symbol   VOID;
+terminal  Symbol   WHILE;
+terminal  Symbol   ASS_ADD;
+terminal  Symbol   LPAREN, RPAREN, LBRACE, RBRACE, EQUALS;
+terminal  Symbol   PERIOD, COLON, SEMICOLON, COMMA, PIPE, AND, ASTERICK;
+terminal  Symbol   PLUSOP, MINUSOP, RSLASH, PERCENT, QUESTION;
+terminal  Symbol   BANG; 
+
+terminal  String   IDENTIFIER, LITERAL;
+terminal  Integer  INTNUMBER;
+
+
+/* To save you typing, I've made all these AbstracNode types.  You will want
+ * to customize them as you go.
+ */
+
+non terminal   AbstractNode     CompilationUnit;
+
+start with CompilationUnit;
+
+
+CompilationUnit
+        ::=	SEMICOLON
+	;
