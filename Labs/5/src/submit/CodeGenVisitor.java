@@ -73,6 +73,7 @@ public class CodeGenVisitor extends NodeVisitor {
 	 * must have a static main431 to kick things off
 	 */
 	public void visit(ClassDeclaring c) {
+		
 		emitComment("CSE431 automatically generated code file");
 		emitComment("");
 		emit(c, ".class public TestClasses/" + c.getName());
@@ -97,8 +98,56 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 	
 	public void visit(MethodDeclaring i) {
-		String paramType = i.getParams().getNodeType().toString();		
-		emitComment(paramType);
+		if(i.getParams().getNodeType()==null){
+			
+		}
+		else {
+			String paramType = i.getParams().getNodeType().toString();		
+			emitComment(paramType);
+		}
+		String mod= i.getMods().toString(); // get method modifier 
+		String type= i.getType().getTypeString();// get method type
+		String name= i.getName(); // get method name
+		
+		//start method
+		emit( ".method "+mod+" "+name+"()"+type);
+		//TODO EXTRA CREDIT: determine amount of stack and local variables
+		emit(".limit locals 100");
+		emit(".limit stack 100");
+		
+		//visit method body 
+		visitChildren((AbstractNode)i);
+		
+		//return and end the method
+		emit("return");
+		emit(".end method");
+		
+	}
+	
+	public void visit(ComputeIsh c){
+		//visit children noded before compute
+		visitChildren((AbstractNode)c);
+		//compute
+		emit("i"+c.getOperation());
+	}
+	public void visit(AssignIsh a){
+		//visit children node before assign
+		visitChildren((AbstractNode) a);
+		//TODO assign dynamically instead of hardcoded value 1
+		emit("istore_" + 1);
+		emit("getstatic java/lang/System/out Ljava/io/PrintStream;");
+		emit("ldc" + " \"Register 1 equals as of now: \" ");
+		emit("invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V");
+		emit("getstatic java/lang/System/out Ljava/io/PrintStream;");
+		emit("iload 1");
+		emit("invokestatic java/lang/String/valueOf(I)Ljava/lang/String;");
+		emit("invokevirtual java/io/PrintStream/println(Ljava/lang/String;)V");
+	
 	}
 
+	public void visit(ConstantInt ci){
+		//store constant
+		emit("ldc "+ci.getVal());
+		visitChildren((AbstractNode) ci);
+	}
 }
