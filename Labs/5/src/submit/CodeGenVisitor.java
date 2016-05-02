@@ -4,9 +4,10 @@ import coursesolutions.courseparser.CourseParser;
 import coursesolutions.courseparser.CourseScanner;
 import lab7.*;
 import lab8.*;
-import java.io.PrintStream;
-import autogen.*;
 
+import java.io.PrintStream;
+
+import autogen.*;
 import common.OpenFile;
 
 /**
@@ -98,29 +99,51 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 	
 	public void visit(MethodDeclaring i) {
-		if(i.getParams().getNodeType()==null){
-			
-		}
-		else {
-			String paramType = i.getParams().getNodeType().toString();		
-			emitComment(paramType);
-		}
 		String mod= i.getMods().toString(); // get method modifier 
 		String type= i.getType().getTypeString();// get method type
 		String name= i.getName(); // get method name
+		String param= "()";
+		
+		
+		
+		if(i.getParams().getChild() != null){
+			AbstractNode s = i.getParams().getChild();
+			param="("+i.getParams().getChild().toString().charAt(6);
+			emitComment(param);
+			
+			//multiple params
+			while(s.getSib() != null){
+				param = param+s.getSib().toString().charAt(6);
+				s = s.getSib();
+			}
+			
+			param = param + ")";
+			
+		}
+		
+		
+		
+		if(i.getParams().getNodeType()==null){
+		}
+		else {
+			emitComment(i.getParams().getName());
+			String paramType = i.getParams().getNodeType().toString();		
+			emitComment("param"+paramType);
+		}
+	
 		
 		//start method
-		emit( ".method "+mod+" "+name+"()"+type);
+		emit( ".method "+mod+" "+name+param+type);
 		//TODO EXTRA CREDIT: determine amount of stack and local variables
-		emit(".limit locals 100");
-		emit(".limit stack 100");
+		emit(".limit locals 500");
+		emit(".limit stack 500");
 		
 		//visit method body 
 		visitChildren((AbstractNode)i);
 		
 		//return and end the method
 		emit("return");
-		emit(".end method");
+		emit(".end method\n");
 		
 	}
 	
@@ -133,15 +156,19 @@ public class CodeGenVisitor extends NodeVisitor {
 	public void visit(AssignIsh a){
 		//visit children node before assign
 		visitChildren((AbstractNode) a);
-		//TODO assign dynamically instead of hardcoded value 1
-		emit("istore_" + 1);
-		emit("getstatic java/lang/System/out Ljava/io/PrintStream;");
-		emit("ldc" + " \"Register 1 equals as of now: \" ");
-		emit("invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V");
-		emit("getstatic java/lang/System/out Ljava/io/PrintStream;");
-		emit("iload 1");
-		emit("invokestatic java/lang/String/valueOf(I)Ljava/lang/String;");
-		emit("invokevirtual java/io/PrintStream/println(Ljava/lang/String;)V");
+		//TODO assign dynamically instead of hardcoded value 1		
+		//emitComment(a.getAssignTypeNode().getNodeNum()+"");
+		
+		LocalReferencing assign = (LocalReferencing) a.getAssignTypeNode();
+		
+		if(a.getAssignTypeNode().getNodeType().toString().equals("I")){	
+			emit("istore " + assign.getSymInfo().getRegister());
+			emit("iload " + assign.getSymInfo().getRegister());
+		}else{
+			emit("astore " + assign.getSymInfo().getRegister());
+			emit("aload " + assign.getSymInfo().getRegister());
+		}
+		
 	
 	}
 
@@ -150,4 +177,124 @@ public class CodeGenVisitor extends NodeVisitor {
 		emit("ldc "+ci.getVal());
 		visitChildren((AbstractNode) ci);
 	}
+	
+	public void visit(FieldReferencing fr){
+		visitChildren((AbstractNode) fr);
+		//TODO have to get class name dynamically
+		AbstractNode n = (AbstractNode) fr;
+		String param = "()";
+
+		
+		int count = 0;
+		if(n.getSib() != null){
+			if(n.getSib().getChild() != null){
+				LocalReferencing l = (LocalReferencing) n.getSib().getChild();
+				param = "(" + l.getSymInfo().getType();
+				emit("iload "+ count);
+				count++;
+				AbstractNode z = n.getSib().getChild();
+				while(z.getSib() != null){
+					emit("iload "+ count);
+					count++;
+					LocalReferencing zl = (LocalReferencing) z;
+					param = param + zl.getSymInfo().getType();
+					z = z.getSib();	
+				}
+			}
+			param = param + ")";
+		}
+		emit("invokevirtual java/io/PrintStream/"+ fr.getFieldName()+param+ fr.getResultingType());
+	}
+	
+	public void visit(StaticReferencing sr){
+		AbstractNode n = (AbstractNode) sr;
+		String param = "()";
+		if(n.getSib() != null){
+			if(n.getSib().getChild() != null){
+				LocalReferencing l = (LocalReferencing) n.getSib().getChild();
+				param = "(" + l.getSymInfo().getType();
+				
+				AbstractNode z = n.getSib().getChild();
+				
+				if(l.getSymInfo().getType().toString().equals("I")){
+					emit("iload " + l.getSymInfo().getRegister());
+				}else{
+					emit("aload " + l.getSymInfo().getRegister());
+				}
+				
+				while(z.getSib() != null){
+					LocalReferencing zl = (LocalReferencing) z;
+					if(zl.getSymInfo().getType().toString().equals("I")){
+						emit("iload " + zl.getSymInfo().getRegister());
+					}else{
+						emit("aload " + zl.getSymInfo().getRegister());
+					}
+					
+					param = param + zl.getSymInfo().getType();
+					z = z.getSib();	
+				}
+			}
+			param = param + ")";
+		}
+		
+		String className= sr.getClassName().toString();
+		if(className.substring(1,5).equals("java")){
+			emit("getstatic "+ className.substring(1, className.length()-1)+"/"+sr.getFieldName()+" "+sr.getResultingType());
+		}else{
+			emit("invokestatic " + className.substring(1, className.length()-1)+"/"+ sr.getFieldName()+param+sr.getResultingType());	
+		}
+		visitChildren((AbstractNode) sr);
+	}
+	
+	public void visit(LocalDeclaring ld){
+		AbstractNode n = (AbstractNode) ld;
+		ld.getSymInfo().setRegister(n.getNodeNum());
+		visitChildren((AbstractNode) ld);
+	}
+	
+	/*
+	public void visit(LocalReferencing lr){
+		
+		AbstractNode n = (AbstractNode) lr;
+		lr.getSymInfo().setRegister(n.getNodeNum()); 
+		
+		visitChildren((AbstractNode) lr);
+		
+		
+		emit("istore " + lr.getSymInfo().getRegister());
+		emit("iload " + lr.getSymInfo().getRegister());
+		emitComment(lr.getSymInfo().getRegister() + "");
+		
+	}
+	*/
+	
+	
+	
+	/**
+	public void visit(IfIsh i){
+		
+		emitComment("1 " + i.getFalsePart().getChild().getChild().toString());
+		emitComment("2 " +  i.getTruePart().toString());
+		emitComment("3 " + i.getPredicate().getName());
+		
+		visitChildren((AbstractNode) i);
+		
+		emit("if");
+		
+		
+		
+	}
+	
+	**/
+	
+	/**
+	public void visit(ReturnIsh r){
+		AbstractNode w = (AbstractNode) r;
+		w.
+
+		
+		emit("return" + r.)
+	}
+	**/
+
 }
