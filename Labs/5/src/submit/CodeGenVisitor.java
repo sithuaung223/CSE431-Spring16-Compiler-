@@ -112,17 +112,14 @@ public class CodeGenVisitor extends NodeVisitor {
 		if(i.getParams().getChild() != null){
 			AbstractNode s = i.getParams().getChild();
 			LocalDeclaring p = (LocalDeclaring) s;
-			emitComment("paramdecarling"+count);
 			p.getSymInfo().setRegister(count);
 			
 			param="("+p.getType();
-			emitComment(param);
 			
 			//multiple params
 			while(s.getSib() != null){
 				count++;
 				p = (LocalDeclaring) s.getSib();
-				emitComment("paramdecarlings"+count);
 				p.getSymInfo().setRegister(count);
 				param = param+p.getType();
 				s = s.getSib();
@@ -140,9 +137,7 @@ public class CodeGenVisitor extends NodeVisitor {
 			emitComment(i.getParams().getName());
 			String paramType = i.getParams().getNodeType().toString();		
 			emitComment("param"+paramType);
-		}
-		emitComment("in the method");
-		
+		}		
 		//start method
 		emit( ".method "+mod+" "+name+param+type);
 		//TODO EXTRA CREDIT: determine amount of stack and local variables
@@ -166,10 +161,7 @@ public class CodeGenVisitor extends NodeVisitor {
 		emit("i"+c.getOperation());
 	}
 	public void visit(AssignIsh a){
-		//visit children node before assign
-		emitComment("before visiting assign children");
-		emitComment("right child: "+ a.getAssignTypeNode());
-		
+		//visit children node before assign		
 		//get right child
 		dispatch(a.getSubjectNode());
 		
@@ -268,12 +260,11 @@ public class CodeGenVisitor extends NodeVisitor {
 	
 	public void visit(LocalDeclaring ld){
 		AbstractNode n = (AbstractNode) ld;
-		emitComment("localdecarling");
 		ld.getSymInfo().setRegister(n.getNodeNum());
 		visitChildren((AbstractNode) ld);
 	}
 	public void visit(LocalReferencing lr){
-		emitComment("id"+ lr.getId());
+		emitComment("id "+ lr.getId());
 		if(lr.getSymInfo().getType().toString().equals("I")){
 			emitComment("I in parameter"+ lr.getSymInfo().toString());
 			emit("iload " + lr.getSymInfo().getRegister());
@@ -290,33 +281,69 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 	public void visit(IfIsh If){
 		
-		emitComment("if predicate"+ If.getPredicate().getName());
+		AbstractNode bo = (AbstractNode) If;
 		emit("ifStart: ");
+		
+		String[] bool = bo.getChild().whatAmI().split("Node");
+		
+		if(bool[0].equals("Bool")){
+			String[] j = bo.getChild().getName().split(" ");
+			if(j[1].equals("false")){
+				emit("goto falsePart");
+			}else{
+				emit("goto truePart");
+			}
+		}
+		
+		
 		dispatch(If.getPredicate());
 		
-		emitComment("if flase part" + If.getFalsePart().getName());
-		emit("falsePart:");
-		dispatch(If.getFalsePart());
 		
-		emitComment("if true part" + If.getTruePart().getChild().getName());	
 		emit("truePart:");
 		dispatch(If.getTruePart());
+		emit("goto endIf");
+		
+		
+		emit("falsePart:");
+		dispatch(If.getFalsePart());
+		emit("goto endIf");
+		
+		emit("endIf: ");
 	
 	}
 	public void visit(WhileIsh wh){
+		AbstractNode bo = (AbstractNode) wh;
 		
-		emitComment("while predicate"+ wh.getPredicate().getName());
 		emit("whileStart: ");
-		dispatch(wh.getPredicate());
 		
-		emitComment("while true part"+ wh.getBody().toString());
+		String[] bool = bo.getChild().whatAmI().split("Node");
+		
+	
+		if(bool[0].equals("Bool")){
+			String[] j = bo.getChild().getName().split(" ");
+			if(j[1].equals("false")){
+				emit("goto falsePart");
+			}
+		}
+		
+		if(bool[0] != ("Bool")){
+			dispatch(wh.getPredicate());
+		}
+		
+		
 		emit("truePart: ");
 		dispatch(wh.getBody());
-		emitComment("while loop back");
+		if(bool[0].equals("Bool")){
+			String[] j = bo.getChild().getName().split(" ");
+			if(j[1].equals("true")){
+				emit("goto truePart");
+			}
+		}
 		emit("goto whileStart");
 		
-		emitComment("while false part");
 		emit("falsePart: ");
+		
+		
 	}
 	public void visit(CompareIsh cmp){
 		AbstractNode Acmp= (AbstractNode) cmp;
