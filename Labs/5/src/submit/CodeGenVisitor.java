@@ -108,12 +108,14 @@ public class CodeGenVisitor extends NodeVisitor {
 		
 		if(i.getParams().getChild() != null){
 			AbstractNode s = i.getParams().getChild();
-			param="("+i.getParams().getChild().toString().charAt(6);
+			LocalDeclaring p = (LocalDeclaring) s;
+			param="("+p.getType();
 			emitComment(param);
 			
 			//multiple params
 			while(s.getSib() != null){
-				param = param+s.getSib().toString().charAt(6);
+				p = (LocalDeclaring) s.getSib();
+				param = param+p.getType();
 				s = s.getSib();
 			}
 			
@@ -178,6 +180,12 @@ public class CodeGenVisitor extends NodeVisitor {
 		visitChildren((AbstractNode) ci);
 	}
 	
+	public void visit(ConstantString cs){
+		//store constant
+		emit("ldc " +"\""+cs.getVal()+"\"");
+		visitChildren((AbstractNode) cs);
+	}
+	
 	public void visit(FieldReferencing fr){
 		visitChildren((AbstractNode) fr);
 		//TODO have to get class name dynamically
@@ -190,18 +198,37 @@ public class CodeGenVisitor extends NodeVisitor {
 			if(n.getSib().getChild() != null){
 				LocalReferencing l = (LocalReferencing) n.getSib().getChild();
 				param = "(" + l.getSymInfo().getType();
-				emit("iload "+ count);
-				count++;
-				AbstractNode z = n.getSib().getChild();
-				while(z.getSib() != null){
+				
+				if(l.getSymInfo().getType().toString().equals("I")){
 					emit("iload "+ count);
 					count++;
+				}else{
+					emit("aload "+ count);
+					count++;
+				}
+				
+
+				
+				
+				AbstractNode z = n.getSib().getChild();
+				while(z.getSib() != null){
 					LocalReferencing zl = (LocalReferencing) z;
+					
+					if(zl.getSymInfo().getType().toString().equals("I")){
+						emit("iload "+ count);
+						count++;
+					}else{
+						emit("aload "+ count);
+						count++;
+					}
+					
+					
 					param = param + zl.getSymInfo().getType();
 					z = z.getSib();	
 				}
+				param = param + ")";
 			}
-			param = param + ")";
+			
 		}
 		emit("invokevirtual java/io/PrintStream/"+ fr.getFieldName()+param+ fr.getResultingType());
 	}
@@ -233,8 +260,8 @@ public class CodeGenVisitor extends NodeVisitor {
 					param = param + zl.getSymInfo().getType();
 					z = z.getSib();	
 				}
+				param = param + ")";
 			}
-			param = param + ")";
 		}
 		
 		String className= sr.getClassName().toString();
@@ -252,49 +279,21 @@ public class CodeGenVisitor extends NodeVisitor {
 		visitChildren((AbstractNode) ld);
 	}
 	
-	/*
-	public void visit(LocalReferencing lr){
-		
-		AbstractNode n = (AbstractNode) lr;
-		lr.getSymInfo().setRegister(n.getNodeNum()); 
-		
-		visitChildren((AbstractNode) lr);
-		
-		
-		emit("istore " + lr.getSymInfo().getRegister());
-		emit("iload " + lr.getSymInfo().getRegister());
-		emitComment(lr.getSymInfo().getRegister() + "");
-		
-	}
-	*/
-	
-	
-	
-	/**
-	public void visit(IfIsh i){
-		
-		emitComment("1 " + i.getFalsePart().getChild().getChild().toString());
-		emitComment("2 " +  i.getTruePart().toString());
-		emitComment("3 " + i.getPredicate().getName());
-		
-		visitChildren((AbstractNode) i);
-		
-		emit("if");
-		
-		
-		
-	}
-	
-	**/
-	
-	/**
 	public void visit(ReturnIsh r){
 		AbstractNode w = (AbstractNode) r;
-		w.
+		if(w.getChild().getChild() != null){
+			LocalReferencing l = (LocalReferencing) w.getChild().getChild();
+			emit("ret " + l.getSymInfo().getRegister());
+		}else{
+			ConstantInt i = (ConstantInt) w;
+			emit("lcd" + i.getVal());
+			emit("ireturn");
+			emit("sad");
 
+		}
 		
-		emit("return" + r.)
 	}
-	**/
+	
+
 
 }
