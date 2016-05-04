@@ -99,7 +99,6 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 	public void visit(ParamIsh p) {
 		emitComment("do nothing at paramish");
-
 	}
 	
 	public void visit(MethodDeclaring i) {
@@ -112,17 +111,13 @@ public class CodeGenVisitor extends NodeVisitor {
 		if(i.getParams().getChild() != null){
 			AbstractNode s = i.getParams().getChild();
 			LocalDeclaring p = (LocalDeclaring) s;
-			emitComment("paramdecarling"+count);
 			p.getSymInfo().setRegister(count);
 			
 			param="("+p.getType();
-			emitComment(param);
-			
 			//multiple params
 			while(s.getSib() != null){
 				count++;
 				p = (LocalDeclaring) s.getSib();
-				emitComment("paramdecarlings"+count);
 				p.getSymInfo().setRegister(count);
 				param = param+p.getType();
 				s = s.getSib();
@@ -141,8 +136,6 @@ public class CodeGenVisitor extends NodeVisitor {
 			String paramType = i.getParams().getNodeType().toString();		
 			emitComment("param"+paramType);
 		}
-		emitComment("in the method");
-		
 		//start method
 		emit( ".method "+mod+" "+name+param+type);
 		//TODO EXTRA CREDIT: determine amount of stack and local variables
@@ -163,29 +156,23 @@ public class CodeGenVisitor extends NodeVisitor {
 		visitChildren((AbstractNode)c);
 		boolean trigger = true;
 		//compute
-		emitComment("compute");
 		AbstractNode newChild = (AbstractNode) c;
 		AbstractNode z = newChild.getChild();
 		String[] h = z.whatAmI().toString().split("Node");
 		String[] h2 =  newChild.whatAmI().toString().split("Node"); 
 		
 		if(h2[0].equals("ReturnValue")){
-			if(h[0].equals("Int")){	
-				
+			if(h[0].equals("Int")){			
 			}else if(h[0].equals("String")){
 				trigger = false;
-				emit("a"+c.getOperation());
-				
-				
+				emit("a"+c.getOperation());		
 			}else if(h[0].equals("Ref")){
 				LocalReferencing r = (LocalReferencing) z;
 				if(r.getSymInfo().getType().toString().equals("I")){		
 				}else{
-					emitComment(r.getSymInfo().getType().toString());
 					trigger = false;
 					emit("a"+c.getOperation());
-				}
-				
+				}			
 			}
 		}
 		
@@ -195,9 +182,6 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 	public void visit(AssignIsh a){
 		//visit children node before assign
-		emitComment("before visiting assign children");
-		emitComment("right child: "+ a.getAssignTypeNode());
-		
 		//get right child
 		dispatch(a.getSubjectNode());
 		
@@ -231,8 +215,7 @@ public class CodeGenVisitor extends NodeVisitor {
 			emit("ldc 1");
 		}else{
 			emit("ldc 0");
-		}
-		
+		}	
 		visitChildren((AbstractNode) cb);
 	}
 	
@@ -258,6 +241,7 @@ public class CodeGenVisitor extends NodeVisitor {
 					emit("aload "+ count);
 					count++;
 				}
+				
 				AbstractNode z = n.getSib().getChild();
 				while(z.getSib() != null){
 					LocalReferencing zl = (LocalReferencing) z;
@@ -282,15 +266,12 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 	
 	public void visit(StaticReferencing sr){
-		emitComment("staticReferencing"+ sr.getClassName());
 		AbstractNode n = (AbstractNode) sr;
 		String param = "()";
 		String className= sr.getClassName().toString();
 		if(n.getSib() != null){
 			if(n.getSib().getChild() != null){
-				visitChildren((AbstractNode) n.getSib());
-				emitComment("Name: "+ n.getSib().getChild().getNodeType().toString());
-				
+				visitChildren((AbstractNode) n.getSib());				
 				AbstractNode z = n.getSib().getChild();
 				String paramTypes = z.getNodeType().toString();
 				
@@ -313,12 +294,11 @@ public class CodeGenVisitor extends NodeVisitor {
 	
 	public void visit(LocalDeclaring ld){
 		AbstractNode n = (AbstractNode) ld;
-		emitComment("localdecarling"+ ld.getName());
 		ld.getSymInfo().setRegister(n.getNodeNum());
 		visitChildren((AbstractNode) ld);
 	}
 	public void visit(LocalReferencing lr){
-		emitComment("id"+ lr.getId());
+		emitComment("id "+ lr.getId());
 		if(lr.getSymInfo().getType().toString().equals("I")){
 			emitComment("I in parameter"+ lr.getSymInfo().toString());
 			emit("iload " + lr.getSymInfo().getRegister());
@@ -329,51 +309,43 @@ public class CodeGenVisitor extends NodeVisitor {
 			emitComment("not I in parameter"+ lr.getSymInfo().toString());
 			emit("aload " + lr.getSymInfo().getRegister());
 		}
-//		AbstractNode lrNode= (AbstractNode) lr;
-//		emitComment("children of LR:" +lrNode.getChild().getName());
 		visitChildren((AbstractNode) lr);
 	}
 	public void visit(InvokeIsh i){
 		AbstractNode ia = (AbstractNode) i;
-		//dispatch(ia.getChild().getSib());
 		dispatch(ia.getChild());
 
 	}
 	public void visit(IfIsh If){
 		AbstractNode bo = (AbstractNode) If;
-		
-		emitComment("if predicate"+ If.getPredicate().getNodeType().toString());
-		emit("ifStart: ");
+		emit("ifStart"+ bo.getNodeNum()+":");
 		
 		String[] bool = bo.getChild().whatAmI().split("Node");
 		
 		if(bool[0].equals("Bool")){
 			String[] j = bo.getChild().getName().split(" ");
 			if(j[1].equals("false")){
-				emit("goto if_falsePart");
+				emit("goto if_falsePart" + bo.getNodeNum());
 			}else{
-				emit("goto if_truePart");
+				emit("goto if_truePart"+ bo.getNodeNum());
 			}
 		}else{
 			dispatch(If.getPredicate());
 			CompareIsh cmp= (CompareIsh) If.getPredicate();
-			emitComment("IN If:"+cmp.getCompare());
-			emit("if"+cmp.getCompare()+" if_truePart");
-			emit("goto if_falsePart");
+			emit("if"+cmp.getCompare()+" if_truePart"+ bo.getNodeNum());
+			emit("goto if_falsePart"+ bo.getNodeNum());
 		}
 		
-		emit("if_truePart:");
+		emit("if_truePart"+ bo.getNodeNum()+":");
 		dispatch(If.getTruePart());
-		emit("goto endIf");
+		emit("goto endIf"+ bo.getNodeNum());
 		
 		if(If.getFalsePart() != null){
-			emit("if_falsePart:");
+			emit("if_falsePart"+ bo.getNodeNum()+":");
 			dispatch(If.getFalsePart());
-			emit("goto endIf");			
-		}
-
-		
-		emit("endIf: ");
+			emit("goto endIf"+ bo.getNodeNum());			
+		}	
+		emit("endIf"+ bo.getNodeNum()+":");
 	}
 	
 	public void visit(WhileIsh wh){
@@ -381,9 +353,7 @@ public class CodeGenVisitor extends NodeVisitor {
 		AbstractNode bo = (AbstractNode) wh;
 		emit("whileStart: ");
 		String[] bool = bo.getChild().whatAmI().split("Node");
-
-		
-		
+	
 		if(bool[0].equals("Bool")){
 			String[] j = bo.getChild().getName().split(" ");
 			if(j[1].equals("false")){
