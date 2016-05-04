@@ -161,10 +161,37 @@ public class CodeGenVisitor extends NodeVisitor {
 	public void visit(ComputeIsh c){
 		//visit children noded before compute
 		visitChildren((AbstractNode)c);
+		boolean trigger = true;
 		//compute
 		emitComment("compute");
-		//emitComment(c.getOperation());
-		emit("i"+c.getOperation());
+		AbstractNode newChild = (AbstractNode) c;
+		AbstractNode z = newChild.getChild();
+		String[] h = z.whatAmI().toString().split("Node");
+		String[] h2 =  newChild.whatAmI().toString().split("Node"); 
+		
+		if(h2[0].equals("ReturnValue")){
+			if(h[0].equals("Int")){	
+				
+			}else if(h[0].equals("String")){
+				trigger = false;
+				emit("a"+c.getOperation());
+				
+				
+			}else if(h[0].equals("Ref")){
+				LocalReferencing r = (LocalReferencing) z;
+				if(r.getSymInfo().getType().toString().equals("I")){		
+				}else{
+					emitComment(r.getSymInfo().getType().toString());
+					trigger = false;
+					emit("a"+c.getOperation());
+				}
+				
+			}
+		}
+		
+		if(trigger == true){
+			emit("i"+c.getOperation());
+		}
 	}
 	public void visit(AssignIsh a){
 		//visit children node before assign
