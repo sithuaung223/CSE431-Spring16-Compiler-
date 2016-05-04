@@ -1,3 +1,17 @@
+/**
+ * Evan Schwartzman
+ * Si Thu Aung
+ * 
+ * CSE431 Lab5 - Final Project
+ * 
+ * We used the course AST, and the course SymbolTable
+ * 
+ * Passes all test files, except field which is supposed to error out, as noted in the file, because there is a missing class,
+ * but it still generates the correct jasmin code, which is what is supposed to happen. Additionally, secret.canyoudothat and
+ * secret.whataboutthis need to be modified to run, but once the syntax/package etc. stuff is fixed, they pass.
+ * 
+ */
+
 package submit;
 import coursesolutions.*;
 import coursesolutions.courseparser.CourseParser;
@@ -9,9 +23,6 @@ import java.io.PrintStream;
 
 import autogen.*;
 import common.OpenFile;
-
-/**
- */
 
 public class CodeGenVisitor extends NodeVisitor {
 
@@ -102,19 +113,20 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 	
 	public void visit(MethodDeclaring i) {
-		String mod= i.getMods().toString(); // get method modifier 
-		String type= i.getType().getTypeString();// get method type
-		String name= i.getName(); // get method name
+		String mod= i.getMods().toString(); 
+		String type= i.getType().getTypeString();
+		String name= i.getName();
 		String param= "()";
 		int count=0;
 		
+		//Check if there are params
 		if(i.getParams().getChild() != null){
 			AbstractNode s = i.getParams().getChild();
 			LocalDeclaring p = (LocalDeclaring) s;
-			p.getSymInfo().setRegister(count);
-			
+			p.getSymInfo().setRegister(count);	
 			param="("+p.getType();
-			//multiple params
+			
+			//Multiple params
 			while(s.getSib() != null){
 				count++;
 				p = (LocalDeclaring) s.getSib();
@@ -124,6 +136,7 @@ public class CodeGenVisitor extends NodeVisitor {
 			}
 			param = param + ")";		
 		}	
+		
 		if(i.getParams().getNodeType()==null){
 		}
 		else {
@@ -131,26 +144,17 @@ public class CodeGenVisitor extends NodeVisitor {
 			String paramType = i.getParams().getNodeType().toString();		
 			emitComment("param"+paramType);
 		}
-		//start method
 		emit( ".method "+mod+" "+name+param+type);
-		//TODO EXTRA CREDIT: determine amount of stack and local variables
 		emit(".limit locals 500");
-		emit(".limit stack 500");
-		
-		//visit method body 
-		visitChildren((AbstractNode)i);
-		
-		//return and end the method
+		emit(".limit stack 500");		
+		visitChildren((AbstractNode)i);		
 		emit("return");
-		emit(".end method\n");
-		
+		emit(".end method\n");		
 	}
 	
 	public void visit(ComputeIsh c){
-		//visit children noded before compute
 		visitChildren((AbstractNode)c);
 		boolean trigger = true;
-		//compute
 		AbstractNode newChild = (AbstractNode) c;
 		AbstractNode z = newChild.getChild();
 		String[] h = z.whatAmI().toString().split("Node");
@@ -176,33 +180,17 @@ public class CodeGenVisitor extends NodeVisitor {
 		}
 	}
 	
-
-	
 	public void visit(AssignIsh a){
-		//visit children node before assign
-		//get right child
-		dispatch(a.getSubjectNode());
-		
-		//store to variable
+		dispatch(a.getSubjectNode());		
 		String[] field =  a.getAssignTypeNode().whatAmI().split("Reference");
 		if(field[0].equals("Field")){
 			visitChildren((AbstractNode) a.getAssignTypeNode());
-			AbstractNode ar = (AbstractNode) a.getAssignTypeNode().getChild();
 			LocalReferencing assign1 = (LocalReferencing) a.getAssignTypeNode().getChild();	
 			String assign3 = assign1.getSymInfo().getType().toString();
 			String assign4 = assign3.substring(1, assign3.length()-1);
 			emit("swap");
-			emit("putfield " +assign4 +"/"+a.getAssignTypeNode().getChild().getSib().toString()+ " " + a.getAssignTypeNode().getChild().getSib().getSib().getNodeType().toString());
-			
-			/*
-			if(a.getAssignTypeNode().getChild().getSib().getSib().getNodeType().toString().equals("I")){	
-				emit("istore " + assign1.getSymInfo().getRegister());
-			}else if(a.getAssignTypeNode().getNodeType().toString().equals("Z")){
-				emit("istore " + assign1.getSymInfo().getRegister());
-			}else{
-				emit("astore " + assign1.getSymInfo().getRegister());
-			}
-			*/
+			emit("putfield " +assign4 +"/"+a.getAssignTypeNode().getChild().getSib().toString()+ 
+					" " + a.getAssignTypeNode().getChild().getSib().getSib().getNodeType().toString());
 		}else{
 			LocalReferencing assign = (LocalReferencing) a.getAssignTypeNode();	
 			if(a.getAssignTypeNode().getNodeType().toString().equals("I")){	
@@ -216,19 +204,17 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 
 	public void visit(ConstantInt ci){
-		//store constant
 		emit("ldc "+ci.getVal());
 		visitChildren((AbstractNode) ci);
 	}
 	
 	public void visit(ConstantString cs){
-		//store constant
 		emit("ldc " +"\""+cs.getVal()+"\"");
 		visitChildren((AbstractNode) cs);
 	}
 	
 	public void visit(ConstantBool cb){
-		//store constant
+		//Use "1" and "0" as truth values
 		if(cb.getVal()){
 			emit("ldc 1");
 		}else{
@@ -238,12 +224,12 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 	
 	public void visit(FieldReferencing fr){
-		
 		visitChildren((AbstractNode) fr);
-		//TODO have to get class name dynamically
 		AbstractNode n = (AbstractNode) fr;
 		String param = "()";
 		int count = 0;
+		
+		//Check for params
 		if(n.getSib() != null){
 			if(n.getSib().getChild() != null){
 				LocalReferencing l = (LocalReferencing) n.getSib().getChild();
@@ -257,6 +243,8 @@ public class CodeGenVisitor extends NodeVisitor {
 					count++;
 				}
 				AbstractNode z = n.getSib().getChild();
+				
+				//Multiple params
 				while(z.getSib() != null){
 					LocalReferencing zl = (LocalReferencing) z;
 					if(zl.getSymInfo().getType().toString().equals("I") || l.getSymInfo().getType().toString().equals("Z")){
@@ -285,23 +273,27 @@ public class CodeGenVisitor extends NodeVisitor {
 		AbstractNode n = (AbstractNode) sr;
 		String param = "()";
 		String className= sr.getClassName().toString();
+		
+		//Check if there are params
 		if(n.getSib() != null){
 			if(n.getSib().getChild() != null){
 				visitChildren((AbstractNode) n.getSib());				
 				AbstractNode z = n.getSib().getChild();
-				String paramTypes = z.getNodeType().toString();		
-				while(z.getSib() != null){
-					
+				String paramTypes = z.getNodeType().toString();	
+				
+				//Multiple params
+				while(z.getSib() != null){			
 					paramTypes = paramTypes + z.getSib().getNodeType().toString();
 					z = z.getSib();	
 				}
 				param = "("+ paramTypes + ")";
 			}
-			//when there are parameters
+			
+			//When there are parameters
 			emit("invokestatic " + className.substring(1, className.length()-1)+"/"+ sr.getFieldName()+param+sr.getResultingType());
 		}
 		else{
-			//when there are no parameters
+			//When there are no parameters
 			emit("getstatic "+ className.substring(1, className.length()-1)+"/"+sr.getFieldName()+" "+sr.getResultingType());
 		}
 		visitChildren((AbstractNode) sr);
@@ -309,9 +301,12 @@ public class CodeGenVisitor extends NodeVisitor {
 	
 	public void visit(LocalDeclaring ld){
 		AbstractNode n = (AbstractNode) ld;
+		
+		//Set Register
 		ld.getSymInfo().setRegister(n.getNodeNum());
 		visitChildren((AbstractNode) ld);
 	}
+	
 	public void visit(LocalReferencing lr){
 		if(lr.getSymInfo().getType().toString().equals("I")){
 			emit("iload " + lr.getSymInfo().getRegister());
@@ -322,14 +317,19 @@ public class CodeGenVisitor extends NodeVisitor {
 		}
 		visitChildren((AbstractNode) lr);
 	}
+	
 	public void visit(InvokeIsh i){
 		AbstractNode ia = (AbstractNode) i;
 		dispatch(ia.getChild());
 	}
+	
+	//Use unique label names for the if statement to deal with if else if else
 	public void visit(IfIsh If){
 		AbstractNode bo = (AbstractNode) If;
 		emit("ifStart"+bo.getNodeNum()+": ");
-		String[] bool = bo.getChild().whatAmI().split("Node");		
+		String[] bool = bo.getChild().whatAmI().split("Node");
+		
+		//Check for predicate being literally "true" or "false"
 		if(bool[0].equals("Bool")){
 			String[] j = bo.getChild().getName().split(" ");
 			if(j[1].equals("false")){
@@ -340,10 +340,8 @@ public class CodeGenVisitor extends NodeVisitor {
 		}else{
 			dispatch(If.getPredicate());
 			emit("ifeq if_falsePart"+bo.getNodeNum());			
-			emit("goto if_truePart"+bo.getNodeNum());
-			
+			emit("goto if_truePart"+bo.getNodeNum());		
 		}
-		
 		emit("if_truePart"+bo.getNodeNum()+":");
 		dispatch(If.getTruePart());
 		emit("goto endIf"+bo.getNodeNum());
@@ -361,6 +359,7 @@ public class CodeGenVisitor extends NodeVisitor {
 		emit("whileStart"+bo.getNodeNum()+": ");
 		String[] bool = bo.getChild().whatAmI().split("Node");
 		
+		//Check for predicate being literally "true" or "false"
 		if(bool[0].equals("Bool")){
 			String[] j = bo.getChild().getName().split(" ");
 			if(j[1].equals("false")){
@@ -370,7 +369,6 @@ public class CodeGenVisitor extends NodeVisitor {
 			}
 		}else{
 			dispatch(wh.getPredicate());
-			//compare with zero(which is false in boolean) => equal with zero means false in this case
 			emit("ifeq while_falsePart"+bo.getNodeNum());
 			emit("goto while_truePart"+bo.getNodeNum());
 		}
@@ -379,6 +377,8 @@ public class CodeGenVisitor extends NodeVisitor {
 		emit("goto whileStart"+bo.getNodeNum());
 		emit("while_falsePart"+bo.getNodeNum()+": ");
 	}
+	
+	//Some boolean stuff as well
 	public void visit(CompareIsh cmp){
 		AbstractNode Acmp= (AbstractNode) cmp;
 		visitChildren(Acmp);
@@ -391,7 +391,6 @@ public class CodeGenVisitor extends NodeVisitor {
 		emit("ldc 0");
 		emit("goto endPart"+Acmp.getNodeNum());
 		emit("endPart"+Acmp.getNodeNum()+": ");
-
 	}
 	
 	public void visit(AndIsh And){
@@ -409,40 +408,26 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 	
 	public void visit(ShortAndIsh sAnd){
-		AbstractNode ab= (AbstractNode) sAnd;
-		
-		//first child
+		AbstractNode ab= (AbstractNode) sAnd;		
 		dispatch(ab.getChild());
-		//check first child
-		emit("ifeq shortAndJump"+ab.getNodeNum());
-		
-		//second child
+		emit("ifeq shortAndJump"+ab.getNodeNum());		
 		dispatch(ab.getChild().getSib());
-		emit("goto shortAndEnd"+ab.getNodeNum());
-		
-		//go here if first child is false	
+		emit("goto shortAndEnd"+ab.getNodeNum());		
 		emit("shortAndJump"+ab.getNodeNum()+": ");
-		emit("ldc 0");
-		
-		//go here after second child
+		emit("ldc 0");		
 		emit("shortAndEnd"+ab.getNodeNum()+": ");
 	}
 	
 	public void visit(ShortOrIsh sOr){
 		AbstractNode ab= (AbstractNode) sOr;
 		dispatch(ab.getChild());
-		emit("ifne shortOrJump"+ ab.getNodeNum());
-		
-		//second child
+		emit("ifne shortOrJump"+ ab.getNodeNum());		
 		emit("shortOrJump"+ab.getNodeNum()+": ");
 		dispatch(ab.getChild().getSib());
 		emit("goto shortOrEnd"+ab.getNodeNum());
 		emit("shortOrJump"+ab.getNodeNum()+": ");
-		emit("ldc 1");
-		
-		//go here after second child
+		emit("ldc 1");		
 		emit("shortOrEnd"+ab.getNodeNum()+": ");
-
 	}
 
 }
