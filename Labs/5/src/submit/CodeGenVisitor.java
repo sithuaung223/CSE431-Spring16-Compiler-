@@ -318,8 +318,6 @@ public class CodeGenVisitor extends NodeVisitor {
 		emitComment("if predicate"+ If.getPredicate().getNodeType().toString());
 		emit("ifStart: ");
 		
-		dispatch(If.getPredicate());
-		
 		String[] bool = bo.getChild().whatAmI().split("Node");
 		
 		if(bool[0].equals("Bool")){
@@ -330,22 +328,18 @@ public class CodeGenVisitor extends NodeVisitor {
 				emit("goto if_truePart");
 			}
 		}else{
+			dispatch(If.getPredicate());
 			CompareIsh cmp= (CompareIsh) If.getPredicate();
 			emitComment("IN If:"+cmp.getCompare());
 			emit("if"+cmp.getCompare()+" if_truePart");
 			emit("goto if_falsePart");
 		}
 		
-		
-		
-		
-		emitComment("if true part" + If.getTruePart().getChild().getName());	
 		emit("if_truePart:");
 		dispatch(If.getTruePart());
 		emit("goto endIf");
 		
 		if(If.getFalsePart() != null){
-			emitComment("if flase part" + If.getFalsePart().getName());
 			emit("if_falsePart:");
 			dispatch(If.getFalsePart());
 			emit("goto endIf");			
@@ -357,32 +351,35 @@ public class CodeGenVisitor extends NodeVisitor {
 	
 	public void visit(WhileIsh wh){
 	
-		
-		emitComment("while predicate"+ wh.getPredicate().getName());
+		AbstractNode bo = (AbstractNode) wh;
 		emit("whileStart: ");
-		dispatch(wh.getPredicate());
+		String[] bool = bo.getChild().whatAmI().split("Node");
+
 		
-		//handle while predicate here
-		CompareIsh cmp= (CompareIsh) wh.getPredicate();
-		emitComment("IN WHILE:"+cmp.getCompare());
-		emit("if"+cmp.getCompare()+" while_truePart");
-		emit("goto while_falsePart");
 		
-		emitComment("while true part"+ wh.getBody().toString());
+		if(bool[0].equals("Bool")){
+			String[] j = bo.getChild().getName().split(" ");
+			if(j[1].equals("false")){
+				emit("goto while_falsePart");
+			}else{
+				emit("goto while_truePart");
+			}
+		}else{
+			dispatch(wh.getPredicate());
+			CompareIsh cmp= (CompareIsh) wh.getPredicate();
+			emit("if"+cmp.getCompare()+" while_truePart");
+			emit("goto while_falsePart");
+		}
+				
 		emit("while_truePart: ");
 		dispatch(wh.getBody());
-		emitComment("while loop back");
 		emit("goto whileStart");
-		
-		emitComment("while false part");
 		emit("while_falsePart: ");
 	}
 	public void visit(CompareIsh cmp){
 		AbstractNode Acmp= (AbstractNode) cmp;
 		visitChildren(Acmp);
 		emit("isub");
-//		emit("if_icmp"+cmp.getCompare()+" truePart");
-//		emit("goto falsePart");
 	}
 	
 
