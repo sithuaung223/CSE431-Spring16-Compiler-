@@ -122,13 +122,8 @@ public class CodeGenVisitor extends NodeVisitor {
 				param = param+p.getType();
 				s = s.getSib();
 			}
-			
-			param = param + ")";
-			
-		}
-		
-		
-		
+			param = param + ")";		
+		}	
 		if(i.getParams().getNodeType()==null){
 		}
 		else {
@@ -194,7 +189,6 @@ public class CodeGenVisitor extends NodeVisitor {
 		}else{
 			emit("astore " + assign.getSymInfo().getRegister());
 		}
-
 	}
 
 	public void visit(ConstantInt ci){
@@ -224,10 +218,7 @@ public class CodeGenVisitor extends NodeVisitor {
 		visitChildren((AbstractNode) fr);
 		//TODO have to get class name dynamically
 		AbstractNode n = (AbstractNode) fr;
-		
 		String param = "()";
-
-		
 		int count = 0;
 		if(n.getSib() != null){
 			if(n.getSib().getChild() != null){
@@ -241,28 +232,25 @@ public class CodeGenVisitor extends NodeVisitor {
 					emit("aload "+ count);
 					count++;
 				}
-				
 				AbstractNode z = n.getSib().getChild();
 				while(z.getSib() != null){
 					LocalReferencing zl = (LocalReferencing) z;
-					
 					if(zl.getSymInfo().getType().toString().equals("I") || l.getSymInfo().getType().toString().equals("Z")){
 						emit("iload "+ count);
 						count++;
 					}else{
 						emit("aload "+ count);
 						count++;
-					}
-					
-					
+					}			
 					param = param + zl.getSymInfo().getType();
 					z = z.getSib();	
 				}
 				param = param + ")";
-			}
-			
+			}		
 		}
-		emit("invokevirtual java/io/PrintStream/"+ fr.getFieldName()+param+ fr.getResultingType());
+		LocalReferencing lrn = (LocalReferencing) n.getChild();
+		emit("invokevirtual "+lrn.getSymInfo().getType().toString().substring(1, lrn.getSymInfo().getType().toString().length()-1)+
+				"/"+ fr.getFieldName()+param+ fr.getResultingType());
 	}
 	
 	public void visit(StaticReferencing sr){
@@ -282,11 +270,11 @@ public class CodeGenVisitor extends NodeVisitor {
 				}
 				param = "("+ paramTypes + ")";
 			}
-			//when there is a parameters
+			//when there are parameters
 			emit("invokestatic " + className.substring(1, className.length()-1)+"/"+ sr.getFieldName()+param+sr.getResultingType());
 		}
 		else{
-			//when there is no parameters
+			//when there are no parameters
 			emit("getstatic "+ className.substring(1, className.length()-1)+"/"+sr.getFieldName()+" "+sr.getResultingType());
 		}
 		visitChildren((AbstractNode) sr);
