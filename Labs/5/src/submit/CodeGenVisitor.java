@@ -306,67 +306,140 @@ public class CodeGenVisitor extends NodeVisitor {
 	}
 	public void visit(IfIsh If){
 		AbstractNode bo = (AbstractNode) If;
-		emit("ifStart"+ bo.getNodeNum()+":");
+		
+		emitComment("if predicate"+ If.getPredicate().getNodeType().toString());
+		emit("ifStart"+bo.getNodeNum()+": ");
 		
 		String[] bool = bo.getChild().whatAmI().split("Node");
 		
 		if(bool[0].equals("Bool")){
 			String[] j = bo.getChild().getName().split(" ");
 			if(j[1].equals("false")){
-				emit("goto if_falsePart" + bo.getNodeNum());
+				emit("goto if_falsePart"+bo.getNodeNum());
 			}else{
-				emit("goto if_truePart"+ bo.getNodeNum());
+				emit("goto if_truePart"+bo.getNodeNum());
 			}
 		}else{
 			dispatch(If.getPredicate());
-			CompareIsh cmp= (CompareIsh) If.getPredicate();
-			emit("if"+cmp.getCompare()+" if_truePart"+ bo.getNodeNum());
-			emit("goto if_falsePart"+ bo.getNodeNum());
+			emit("ifeq if_falsePart"+bo.getNodeNum());			
+			emit("goto if_truePart"+bo.getNodeNum());
+			
 		}
 		
-		emit("if_truePart"+ bo.getNodeNum()+":");
+		emit("if_truePart"+bo.getNodeNum()+":");
 		dispatch(If.getTruePart());
-		emit("goto endIf"+ bo.getNodeNum());
+		emit("goto endIf"+bo.getNodeNum());
 		
 		if(If.getFalsePart() != null){
-			emit("if_falsePart"+ bo.getNodeNum()+":");
+			emit("if_falsePart"+bo.getNodeNum()+": ");
 			dispatch(If.getFalsePart());
-			emit("goto endIf"+ bo.getNodeNum());			
-		}	
-		emit("endIf"+ bo.getNodeNum()+":");
+			emit("goto endIf"+bo.getNodeNum());			
+		}
+
+		
+		emit("endIf"+bo.getNodeNum()+": ");
 	}
 	
 	public void visit(WhileIsh wh){
 	
 		AbstractNode bo = (AbstractNode) wh;
-		emit("whileStart: ");
+		emit("whileStart"+bo.getNodeNum()+": ");
 		String[] bool = bo.getChild().whatAmI().split("Node");
-	
+
+		
+		
 		if(bool[0].equals("Bool")){
 			String[] j = bo.getChild().getName().split(" ");
 			if(j[1].equals("false")){
-				emit("goto while_falsePart");
+				emit("goto while_falsePart"+bo.getNodeNum());
 			}else{
-				emit("goto while_truePart");
+				emit("goto while_truePart"+bo.getNodeNum());
 			}
 		}else{
 			dispatch(wh.getPredicate());
-			CompareIsh cmp= (CompareIsh) wh.getPredicate();
-			emit("if"+cmp.getCompare()+" while_truePart");
-			emit("goto while_falsePart");
+			//compare with zero(which is false in boolean) => equal with zero means false in this case
+			emit("ifeq while_falsePart"+bo.getNodeNum());
+			emit("goto while_truePart"+bo.getNodeNum());
 		}
 				
-		emit("while_truePart: ");
+		emit("while_truePart"+bo.getNodeNum()+": ");
 		dispatch(wh.getBody());
-		emit("goto whileStart");
-		emit("while_falsePart: ");
+		emit("goto whileStart"+bo.getNodeNum());
+		
+		emit("while_falsePart"+bo.getNodeNum()+": ");
 	}
 	public void visit(CompareIsh cmp){
 		AbstractNode Acmp= (AbstractNode) cmp;
 		visitChildren(Acmp);
-		emit("isub");
+		emit("if_icmp"+cmp.getCompare()+" truePart"+Acmp.getNodeNum());
+		emit("goto falsePart"+Acmp.getNodeNum());
+		
+		emit("truePart"+Acmp.getNodeNum()+": ");
+		emit("ldc 1");
+		emit("goto endPart"+Acmp.getNodeNum());
+		
+		emit("falsePart"+Acmp.getNodeNum()+": ");
+		emit("ldc 0");
+		emit("goto endPart"+Acmp.getNodeNum());
+		
+		emit("endPart"+Acmp.getNodeNum()+": ");
+
 	}
 	
+	public void visit(AndIsh And){
+		AbstractNode ab= (AbstractNode) And;
+		emitComment("AndIsh"+ab.getChild().getName());
+		dispatch(ab.getChild());
+		emitComment("AndIsh"+ab.getChild().getSib().getName());
+		dispatch(ab.getChild().getSib());
+		emit("imul");
+	}
+	
+	public void visit(OrIsh Or){
+		AbstractNode ab= (AbstractNode) Or;
+		emitComment("OrIsh"+ab.getChild().getName());
+		dispatch(ab.getChild());
+		emitComment("OrIsh"+ab.getChild().getSib().getName());
+		dispatch(ab.getChild().getSib());
+		emit("iadd");
+	}
+	
+	public void visit(ShortAndIsh sAnd){
+		AbstractNode ab= (AbstractNode) sAnd;
+		
+		//first child
+		emitComment("shortAndIsh"+ab.getChild().getName());
+		dispatch(ab.getChild());
+		emit("ifeq shortAndJump"+ab.getNodeNum());//check first child
+			//second child
+			emitComment("shortAndIsh"+ab.getChild().getSib().getName());
+			dispatch(ab.getChild().getSib());
+			emit("goto shortAndEnd"+ab.getNodeNum());
+		//go here if first child is false	
+		emit("shortAndJump"+ab.getNodeNum()+": ");
+		emit("ldc 0");
+		
+		//go here after second child
+		emit("shortAndEnd"+ab.getNodeNum()+": ");
+	}
+	
+	public void visit(ShortOrIsh sOr){
+		AbstractNode ab= (AbstractNode) sOr;
+		emitComment("shortOrIsh"+ab.getChild().getName());
+		dispatch(ab.getChild());
+		
+		emit("ifne shortOrJump"+ ab.getNodeNum());
+			//second child
+			emit("shortOrJump"+ab.getNodeNum()+": ");
+			emitComment("shortOrIsh"+ab.getChild().getSib().getName());
+			dispatch(ab.getChild().getSib());
+			emit("goto shortOrEnd"+ab.getNodeNum());
+		emit("shortOrJump"+ab.getNodeNum()+": ");
+		emit("ldc 1");
+		
+		//go here after second child
+		emit("shortOrEnd"+ab.getNodeNum()+": ");
 
+	}
 
 }
